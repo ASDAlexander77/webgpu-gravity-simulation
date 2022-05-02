@@ -1,0 +1,1 @@
+start "C:\Users\Alexander\AppData\Local\Google\Chrome SxS\Application\chrome.exe" "http://austin-eng.com/webgpu-samples/samples/rotatingCube"
