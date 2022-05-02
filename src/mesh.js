@@ -358,8 +358,8 @@ class SquaresMesh extends ComputedMesh {
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // mass, size, align, align
-            //const size = 0.05 * Math.random() + 0.01;
-            const size = 0.01;
+            const size = 0.01 * Math.random() + 0.01;
+            //const size = 0.01;
             const mass = size;
             instancesInitData.push(mass);
             instancesInitData.push(size);
@@ -398,9 +398,9 @@ class SquaresMesh extends ComputedMesh {
 
         const paramsInitData = [
             // time
+            50.0,
+            // calc steps
             1.0,
-            // speed scale
-            10000.0,
         ];
 
         this.paramsData = new UniformData(

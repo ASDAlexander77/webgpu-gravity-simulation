@@ -11,6 +11,7 @@ class Runner {
     async #runLogic() {
         // 300 000 - crash, 100 000 - very slow
         // 35 000 speed is fine       
+        //await this.#createScene(350);
         await this.#createScene(350);
         this.engine.draw();
     }
