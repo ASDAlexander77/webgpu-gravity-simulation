@@ -10,6 +10,7 @@ class Engine {
     async init() {
         await this.#getWebGPU();
         this.#createView();
+        this.#attachToEvents();
     }
 
     setScene(scene) {
@@ -120,6 +121,19 @@ class Engine {
         document.getElementById("DEBUG").innerHTML = r;
 
         //console.log(data);        
+    }
+
+    #attachToEvents()
+    {
+        this.scale = 0;
+        this.canvasRef.onwheel = (evt) => {
+            evt.preventDefault();
+
+            this.scale += evt.deltaY * -0.01;
+          
+            // Restrict scale
+            this.scale = Math.min(Math.max(.125, this.scale), 4);            
+        }
     }
 
     async #drawLogic() {

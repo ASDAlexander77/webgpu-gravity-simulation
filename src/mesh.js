@@ -397,10 +397,8 @@ class SquaresMesh extends ComputedMesh {
         );
 
         const paramsInitData = [
-            // time
+            // delta time
             50.0,
-            // calc steps
-            1.0,
         ];
 
         this.paramsData = new UniformData(
