@@ -1,5 +1,5 @@
-//const DEBUG = true;
-const DEBUG = false;
+const DEBUG = true;
+//const DEBUG = false;
 
 class Engine {
     constructor() {
@@ -10,6 +10,7 @@ class Engine {
     async init() {
         await this.#getWebGPU();
         this.#createView();
+        this.#createParams();
         this.#attachToEvents();
     }
 
@@ -42,6 +43,18 @@ class Engine {
                 console.error(`An uncaught WebGPU validation error was raised: ${event.error.message}`);
             }
         };
+    }
+
+    #createParams() {
+        const paramsInitData = [
+            // scale
+            50.0,
+        ];
+
+        this.paramsData = new UniformData(
+            this,
+            paramsInitData,
+        );        
     }
 
     #draw() {
@@ -77,27 +90,6 @@ class Engine {
                 console.error(`An error occured while creating sampler: ${error.message}`);
             }
         });
-    }
-
-    #updateParams(paramBuffer, newValues) {
-        this.device.queue.writeBuffer(
-            paramBuffer,
-            0,
-            new Float32Array(newValues)
-        );
-    }
-
-    // TODO: put into mesh
-    #copyBuffer(bufferFrom, bufferTo, byteLength) {
-        const copyBufferCmd = this.device.createCommandEncoder();
-        copyBufferCmd.copyBufferToBuffer(
-            bufferFrom,
-            0,
-            bufferTo,
-            0,
-            byteLength);
-
-        return copyBufferCmd;
     }
 
     async #printDebugInfo(instancesCloneData) {
@@ -166,7 +158,9 @@ class Engine {
 
                 const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
-                passEncoder.setPipeline(mesh.getRenderPipeline(this.view));
+                const pipeline = mesh.getRenderPipeline(this.view);
+
+                passEncoder.setPipeline(pipeline);
 
                 if (drawBuffer) {
                     passEncoder.setVertexBuffer(0, drawBuffer);
@@ -180,6 +174,8 @@ class Engine {
                     passEncoder.setBindGroup(0, mesh.TextureBindGroup);
                 }
 
+                passEncoder.setBindGroup(1, this.paramsData.getBindGroupFor(pipeline.getBindGroupLayout(1)));
+
                 const firstVertex = 0;
                 const firstInstance = 0;
                 passEncoder.draw(mesh.vertexCount, mesh.instanceCount, firstVertex, firstInstance);
@@ -189,7 +185,7 @@ class Engine {
             }
 
             if (DEBUG) {
-                const copyCmdDbg = this.#copyBuffer(drawBuffer, mesh.InstancesCloneDataBuffer, mesh.DataByteLength);
+                const copyCmdDbg = mesh.GetCopyDataToCloneCmd(this.tick);
                 commandEncoders.push(copyCmdDbg.finish());
             }
         }

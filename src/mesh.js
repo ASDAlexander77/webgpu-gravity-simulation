@@ -25,10 +25,6 @@ class Mesh {
         return this.instancesSwapData.Buffer;
     }
 
-    get DataByteLength() {
-        return this.instancesData.data.byteLength;
-    }
-
     CurrentInstancesData(tick) {
         if (this.InstancesSwapDataBuffer) {
             return tick % 2
@@ -45,6 +41,22 @@ class Mesh {
 
     get TextureBindGroup() {
         return this.textureBindGroup || (this.textureBindGroup = this.#createTextureBindGroup());
+    }
+
+    GetCopyDataToCloneCmd(tick)
+    {
+        const drawBuffer = this.CurrentInstancesData(tick);
+
+        const copyBufferCmd = this.engine.device.createCommandEncoder();
+
+        copyBufferCmd.copyBufferToBuffer(
+            drawBuffer,
+            0,
+            this.InstancesCloneDataBuffer,
+            0,
+            this.instancesData.data.byteLength);
+
+        return copyBufferCmd;
     }
 
     async addImage(imgId) {
@@ -276,11 +288,11 @@ class ComputedMesh extends Mesh {
         const entries = [
             {
                 binding: 0,
-                resource: this.instancesData.BufferOffset,
+                resource: this.instancesData.ResourceInfo,
             },
             {
                 binding: 1,
-                resource: this.instancesSwapData.BufferOffset,
+                resource: this.instancesSwapData.ResourceInfo,
             },
         ];
 
@@ -297,11 +309,11 @@ class ComputedMesh extends Mesh {
         const entries = [
             {
                 binding: 0,
-                resource: this.instancesSwapData.BufferOffset,
+                resource: this.instancesSwapData.ResourceInfo,
             },
             {
                 binding: 1,
-                resource: this.instancesData.BufferOffset,
+                resource: this.instancesData.ResourceInfo,
             },
         ];
 
@@ -319,7 +331,7 @@ class ComputedMesh extends Mesh {
             entries: [
                 {
                     binding: 0,
-                    resource: this.paramsData.BufferOffset,
+                    resource: this.paramsData.ResourceInfo,
                 },
             ],
         });

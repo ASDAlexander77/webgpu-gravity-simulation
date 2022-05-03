@@ -1,7 +1,5 @@
-function getTypeSize(type)
-{
-    switch (type)
-    {
+function getTypeSize(type) {
+    switch (type) {
         case "float32": return 4;
         case "float64": return 8;
     }
@@ -9,28 +7,23 @@ function getTypeSize(type)
     throw "No data"
 }
 
-class Data
-{
-    constructor(engine, data)
-    {
+class Data {
+    constructor(engine, data) {
         this.engine = engine;
         this.data = new Float32Array(data.length)
         this.data.set(data);
     }
 
-    get Data()
-    {
+    get Data() {
         return this.data;
     }
-    
-    get Buffer()
-    {
+
+    get Buffer() {
         return this.buffer || (this.buffer = this.#createBuffer());
     }
 
-    get BufferOffset()
-    {
-        return this.bufferOffset || (this.bufferOffset = this.#createBufferOffset());
+    get ResourceInfo() {
+        return this.resourceInfo || (this.resourceInfo = this.createResourceInfo());
     }
 
     async LoadData() {
@@ -43,8 +36,25 @@ class Data
         }
     }
 
-    #createBuffer()
-    {
+    Update(newValues) {
+        this.engine.device.queue.writeBuffer(
+            this.Buffer,
+            0,
+            new Float32Array(newValues)
+        );
+    }
+
+    createResourceInfo() {
+        const resource = {
+            buffer: this.Buffer,
+            //offset: 0,
+            //size: this.data.byteLength,
+        };
+
+        return resource;
+    }
+
+    #createBuffer() {
         const buffer = this.engine.device.createBuffer({
             size: this.data.byteLength,
             usage: this.usage,
@@ -55,33 +65,40 @@ class Data
         buffer.unmap();
         return buffer;
     }
-
-    #createBufferOffset()
-    {
-        const resource = {
-            buffer: this.Buffer,
-            //offset: 0,
-            //size: this.data.byteLength,
-        };
-
-        return resource;
-    }    
 }
 
-class UniformData extends Data
-{
-    constructor(engine, data)
-    {
+class UniformData extends Data {
+    constructor(engine, data) {
         super(engine, data);
 
         this.usage = GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST;
     }
+
+    getBindGroupFor(bindGroupLayout) {
+
+        if (this.bindGroupLayout == bindGroupLayout)
+        {
+            return this.uniformBindGroup;
+        }
+
+        this.bindGroupLayout = bindGroupLayout;
+
+        const uniformBindGroup = this.engine.device.createBindGroup({
+            layout: bindGroupLayout,
+            entries: [
+                {
+                    binding: 0,
+                    resource: this.ResourceInfo,
+                },
+            ],
+        });
+
+        return this.uniformBindGroup = uniformBindGroup;
+    }
 }
 
-class InstanceData extends Data
-{
-    constructor(engine, data, strides)
-    {
+class InstanceData extends Data {
+    constructor(engine, data, strides) {
         super(engine, data);
 
         this.attributes = [];
@@ -90,22 +107,20 @@ class InstanceData extends Data
 
         // calculate attributes
         let offset = 0;
-        for (const stride of strides)
-        {
+        for (const stride of strides) {
             this.#addAttribute(
                 stride.location,
                 offset,
                 `${stride.type}x${stride.count}`,
             );
-    
+
             offset += stride.count * getTypeSize(stride.type);
         }
 
         this.arrayStride = offset;
     }
 
-    get BufferDescriptor()
-    {
+    get BufferDescriptor() {
         const bufferDescr = {
             arrayStride: this.arrayStride,
             stepMode: this.stepMode,
@@ -113,10 +128,9 @@ class InstanceData extends Data
         };
 
         return bufferDescr;
-    } 
+    }
 
-    #addAttribute(shaderLocation, offset, format)
-    {
+    #addAttribute(shaderLocation, offset, format) {
         const attrDescr = {
             shaderLocation: shaderLocation,
             offset: offset,
@@ -124,23 +138,19 @@ class InstanceData extends Data
         };
 
         this.attributes.push(attrDescr);
-    };   
+    };
 }
 
-class InstanceCloneData extends InstanceData
-{
-    constructor(engine, data, strides)
-    {
+class InstanceCloneData extends InstanceData {
+    constructor(engine, data, strides) {
         super(engine, data, strides);
 
         this.usage = GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ;
-    }    
+    }
 }
 
-class VertexData extends InstanceData
-{
-    constructor(engine, data, strides, topology)
-    {
+class VertexData extends InstanceData {
+    constructor(engine, data, strides, topology) {
         super(engine, data, strides);
         this.stepMode = 'vertex';
         this.usage = GPUBufferUsage.VERTEX;

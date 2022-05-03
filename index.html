@@ -52,6 +52,10 @@
 
 <body>
     <textarea id="draw_wgsl">
+        struct ViewParams {
+            scale: f32,
+        };
+
         struct MassSize {
             mass: f32,
             size: f32,
@@ -64,6 +68,7 @@
 
         @binding(0) @group(0) var currentSampler: sampler;
         @binding(1) @group(0) var currentTexture: texture_2d<f32>;
+        @binding(0) @group(1) var<uniform> viewParams : ViewParams;
 
         @stage(vertex)
         fn vert_main(
@@ -73,6 +78,9 @@
             @location(3) a_mass_size : vec2<f32>, 
             @location(4) a_vert_pos : vec3<f32>,
             @location(5) a_vert_uv : vec2<f32>) -> VertexOutput {
+
+          var scale = viewParams.scale;
+
           var output : VertexOutput;
           output.Position = vec4<f32>(a_position + a_vert_pos * a_mass_size.y, 1.0);
           output.fragUV = a_vert_uv;
@@ -83,14 +91,9 @@
         fn frag_main(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
           let texColor = textureSample(currentTexture, currentSampler, fragUV * 0.8 + vec2<f32>(0.1, 0.1));            
           return vec4<f32>(texColor.r, texColor.g, texColor.b, 1.0);
-          //return texColor;
         }        
     </textarea>
     <textarea id="calc_wgsl_">
-        struct ViewParams {
-            scale: f32,
-        };
-
         struct MassSize {
             mass: f32,
             size: f32,
@@ -109,7 +112,6 @@
 
         @binding(0) @group(0) var<storage, read> instancesIn : Instances;
         @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
-        @binding(0) @group(1) var<uniform> viewParams : ViewParams;
 
         @stage(compute) @workgroup_size(64)
         fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
