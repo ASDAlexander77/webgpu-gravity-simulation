@@ -82,7 +82,7 @@
           var scale = viewParams.scale;
 
           var output : VertexOutput;
-          output.Position = vec4<f32>(a_position + a_vert_pos * a_mass_size.y, 1.0);
+          output.Position = vec4<f32>((a_position + a_vert_pos * a_mass_size.y) * scale, 1.0);
           output.fragUV = a_vert_uv;
           return output;
         }

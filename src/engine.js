@@ -1,5 +1,5 @@
-const DEBUG = true;
-//const DEBUG = false;
+//const DEBUG = true;
+const DEBUG = false;
 
 class Engine {
     constructor() {
@@ -46,9 +46,11 @@ class Engine {
     }
 
     #createParams() {
+        this.scale = 1.0;
+
         const paramsInitData = [
             // scale
-            50.0,
+            this.scale,
         ];
 
         this.paramsData = new UniformData(
@@ -117,14 +119,15 @@ class Engine {
 
     #attachToEvents()
     {
-        this.scale = 0;
         this.canvasRef.onwheel = (evt) => {
             evt.preventDefault();
 
-            this.scale += evt.deltaY * -0.01;
+            this.scale += evt.deltaY * -0.0001;
           
             // Restrict scale
-            this.scale = Math.min(Math.max(.125, this.scale), 4);            
+            //this.scale = Math.min(Math.max(.125, this.scale), 4);      
+            
+            this.paramsData.Update([this.scale]);
         }
     }
 
