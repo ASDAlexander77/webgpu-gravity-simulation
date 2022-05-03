@@ -24,7 +24,6 @@ class Runner {
         const squaresMesh = new SquaresMesh(this.engine, count);
         squaresMesh.Shader = "draw_wgsl";
         squaresMesh.ComputeShader = "calc_wgsl";
-        //await squaresMesh.addTexture("txt1");
         await squaresMesh.addSvg("svg1");
 
         scene.addMesh(squaresMesh);

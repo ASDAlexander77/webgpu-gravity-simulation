@@ -75,10 +75,6 @@ class Mesh {
         this.#addImageAsTexture(imageBitmap);
     }
 
-    addTexture(texture) {
-        this.texture = texture;
-    }
-
     getRenderPipeline(view) {
         if (this.renderPipelineParam != view.MultiSample) {
             this.renderPipeline = undefined;
