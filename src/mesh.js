@@ -97,6 +97,16 @@ class Mesh {
             };
         }
 
+        if (view.EnableDepth) {
+            pipelineDescr.depthStencil = {
+                depthWriteEnabled: true,
+                depthCompare: 'less',
+                format: 'depth24plus',
+            };
+
+            primitive.cullMode = 'back';
+        }
+
         return this.engine.device.createRenderPipeline(pipelineDescr);
     }
 

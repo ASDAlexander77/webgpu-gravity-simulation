@@ -20,6 +20,19 @@ class View
         return this.context.getCurrentTexture().createView();
     }
 
+    get DepthTexture()
+    {
+        return this.depthTexture || (this.depthTexture = this.#createDepthTexture());
+    }
+
+    get EnableDepth() {
+        this.enableDepth = true;
+    }
+
+    set EnableDepth(value) {
+        this.enableDepth = value;
+    }
+
     createRenderPassDescriptor() {
         const renderPassDescriptor = {
             colorAttachments: [
@@ -31,6 +44,11 @@ class View
                 },
             ],
         };
+
+        if (this.enableDepth)
+        {
+            renderPassDescriptor.depthStencilAttachment = this.#getDepthStencilAttachment();
+        }
 
         return renderPassDescriptor;
     }
@@ -58,6 +76,29 @@ class View
             //compositingAlphaMode: 'opaque',
             size: presentationSize,
         });
+    }
+
+    #getDepthStencilAttachment()
+    {
+        const depthStencilAttachment = {
+            view: this.DepthTexture.createView(),
+            depthClearValue: 1.0,
+            depthLoadOp: 'clear',
+            depthStoreOp: 'store',
+        };
+
+        return depthStencilAttachment;
+    }
+
+    #createDepthTexture()
+    {
+        const depthTexture = this.device.createTexture({
+            size: this.presentationSize,
+            format: 'depth24plus',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+          
+        return depthTexture;
     }
 }
 
@@ -94,18 +135,9 @@ class MSAAView extends View
     }
 
     createRenderPassDescriptor() {
-        const renderPassDescriptorMSAA = {
-            colorAttachments: [
-                {
-                    view: this.View,
-                    resolveTarget: this.ResolveTarget,
-                    clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
-                    loadOp: 'clear',
-                    storeOp: 'discard',
-                },
-            ],
-        };
-
+        const renderPassDescriptorMSAA = super.createRenderPassDescriptor();
+        renderPassDescriptorMSAA.resolveTarget = this.ResolveTarget;
+        renderPassDescriptorMSAA.storeOp = 'discard';
         return renderPassDescriptorMSAA;
     }
 
