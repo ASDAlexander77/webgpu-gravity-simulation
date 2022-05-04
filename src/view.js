@@ -58,6 +58,17 @@ class View
         this.renderPassDescriptor.colorAttachments[0].view = this.View;
     }
 
+    getDepthTextureDescriptor()
+    {
+        const depthTextureDescriptor = {
+            size: this.presentationSize,
+            format: 'depth24plus',
+            usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        }
+
+        return depthTextureDescriptor;
+    }
+
     #configureCanvas(canvasRef, adapter, device) {
 
         const context = this.context;
@@ -92,13 +103,7 @@ class View
 
     #createDepthTexture()
     {
-        const depthTexture = this.device.createTexture({
-            size: this.presentationSize,
-            format: 'depth24plus',
-            usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        });
-          
-        return depthTexture;
+        return this.device.createTexture(this.getDepthTextureDescriptor());
     }
 }
 
@@ -122,18 +127,6 @@ class MSAAView extends View
         return this.context.getCurrentTexture().createView();
     }
 
-    #createViewTexture()
-    {
-        const texture = this.device.createTexture({
-            size: this.presentationSize,
-            sampleCount: MSAAView.MSAA,
-            format: this.presentationFormat,
-            usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        });
-
-        return texture.createView();
-    }
-
     createRenderPassDescriptor() {
         const renderPassDescriptorMSAA = super.createRenderPassDescriptor();
         renderPassDescriptorMSAA.resolveTarget = this.ResolveTarget;
@@ -145,4 +138,23 @@ class MSAAView extends View
     {
         this.renderPassDescriptor.colorAttachments[0].resolveTarget = this.ResolveTarget;
     }    
+
+    getDepthTextureDescriptor()
+    {
+        const depthTextureDescriptor = super.getDepthTextureDescriptor();
+        depthTextureDescriptor.sampleCount = MSAAView.MSAA;
+        return depthTextureDescriptor;
+    }
+
+    #createViewTexture()
+    {
+        const texture = this.device.createTexture({
+            size: this.presentationSize,
+            sampleCount: MSAAView.MSAA,
+            format: this.presentationFormat,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+
+        return texture.createView();
+    }
 }
