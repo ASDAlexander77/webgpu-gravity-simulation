@@ -104,7 +104,7 @@ class Mesh {
                 format: 'depth24plus',
             };
 
-            primitive.cullMode = 'back';
+            pipelineDescr.primitive.cullMode = 'back';
         }
 
         return this.engine.device.createRenderPipeline(pipelineDescr);

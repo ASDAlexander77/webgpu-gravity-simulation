@@ -26,7 +26,7 @@ class View
     }
 
     get EnableDepth() {
-        this.enableDepth = true;
+        return this.enableDepth;
     }
 
     set EnableDepth(value) {
