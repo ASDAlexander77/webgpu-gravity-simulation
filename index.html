@@ -53,7 +53,7 @@
 <body>
     <textarea id="draw_wgsl">
         struct ViewParams {
-            scale: f32,
+            modelViewProjectionMatrix : mat4x4<f32>,
         };
 
         struct MassSize {
@@ -62,8 +62,8 @@
         };
 
         struct VertexOutput {
-            @builtin(position) Position : vec4<f32>;
-            @location(0) fragUV : vec2<f32>;
+            @builtin(position) Position : vec4<f32>,
+            @location(0) fragUV : vec2<f32>,
         };
 
         @binding(0) @group(0) var currentSampler: sampler;
@@ -79,10 +79,8 @@
             @location(4) a_vert_pos : vec3<f32>,
             @location(5) a_vert_uv : vec2<f32>) -> VertexOutput {
 
-          var scale = viewParams.scale;
-
           var output : VertexOutput;
-          output.Position = vec4<f32>((a_position + a_vert_pos * a_mass_size.y) * scale, 1.0);
+          output.Position = viewParams.modelViewProjectionMatrix * vec4<f32>((a_position + a_vert_pos * a_mass_size.y), 1.0);
           output.fragUV = a_vert_uv;
           return output;
         }
@@ -284,6 +282,7 @@
      </svg> 
     <canvas id="renderCanvas"></canvas>
     <div id="DEBUG"></div>
+    <script src="src/matrix.js"></script>
     <script src="src/data.js"></script>
     <script src="src/mesh.js"></script>
     <script src="src/scene.js"></script>

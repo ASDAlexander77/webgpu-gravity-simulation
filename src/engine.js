@@ -49,15 +49,17 @@ class Engine {
     #createParams() {
         this.scale = 1.0;
 
-        const paramsInitData = [
-            // scale
-            this.scale,
-        ];
-
         this.paramsData = new UniformData(
             this,
-            paramsInitData,
+            this.#getViewMatrix().Buffer,
         );        
+    }
+
+    #getViewMatrix() {
+        const viewMatrix = Matrix4.Create();
+        viewMatrix.Scale(this.scale);
+        viewMatrix.data[15] = 1.0; // needed for correct scaling
+        return viewMatrix;
     }
 
     #draw() {
@@ -124,11 +126,8 @@ class Engine {
             evt.preventDefault();
 
             this.scale += evt.deltaY * -0.0001;
-          
-            // Restrict scale
-            //this.scale = Math.min(Math.max(.125, this.scale), 4);      
             
-            this.paramsData.Update([this.scale]);
+            this.paramsData.Update(this.#getViewMatrix().Buffer);
         }
     }
 
