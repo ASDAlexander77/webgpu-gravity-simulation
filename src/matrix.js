@@ -22,17 +22,26 @@ class Matrix
     }
 }
 
-class Matrix4
+class Matrix4 extends Matrix
 {
+    constructor(data)
+    {
+        super(4, 4, data);
+    }
+
     static Create()
     {
-        return new Matrix(
-            4, 4,
+        return new Matrix4(
             [
                 1.0, 0, 0, 0,
                 0, 1.0, 0, 0,
                 0, 0, 1.0, 0,
                 0, 0, 0, 1.0
             ]);
+    }
+
+    Zoom(scale) 
+    {
+        this.data[15] = 1 / scale;
     }
 }

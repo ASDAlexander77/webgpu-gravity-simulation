@@ -57,8 +57,7 @@ class Engine {
 
     #getViewMatrix() {
         const viewMatrix = Matrix4.Create();
-        viewMatrix.Scale(this.scale);
-        viewMatrix.data[15] = 1.0; // needed for correct scaling
+        viewMatrix.Zoom(this.scale);
         return viewMatrix;
     }
 
