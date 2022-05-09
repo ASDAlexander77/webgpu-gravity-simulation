@@ -56,8 +56,14 @@ class Engine {
     }
 
     #getViewMatrix() {
-        const viewMatrix = Matrix4.Create();
+        const viewMatrix = Matrix4.One();
         viewMatrix.Zoom(this.scale);
+
+        const projectionMatrix = Matrix4.Zero();
+        projectionMatrix.Perspective();
+        
+        viewMatrix.Multiply(projectionMatrix);
+
         return viewMatrix;
     }
 
