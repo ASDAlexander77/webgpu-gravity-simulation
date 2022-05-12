@@ -48,6 +48,9 @@ class Engine {
 
     #createParams() {
         this.scale = 1.0;
+        this.xangle = 0.0;
+        this.yangle = 0.0;
+        this.zangle = 0.0;
 
         this.paramsData = new UniformData(
             this,
@@ -59,12 +62,19 @@ class Engine {
         const viewMatrix = Matrix4.One();
         viewMatrix.Zoom(this.scale);
 
+        return viewMatrix
+            .Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
+
+        //return viewMatrix;
+
+        /*
         const projectionMatrix = Matrix4.Zero();
         projectionMatrix.Perspective();
         
-        viewMatrix.Multiply(projectionMatrix);
+        const resultMatrix = viewMatrix.Multiply(projectionMatrix);
 
-        return viewMatrix;
+        return resultMatrix;
+        */
     }
 
     #draw() {
@@ -130,7 +140,11 @@ class Engine {
         this.canvasRef.onwheel = (evt) => {
             evt.preventDefault();
 
-            this.scale += evt.deltaY * -0.0001;
+            //this.scale += evt.deltaY * -0.0001;
+            
+            //this.xangle += evt.deltaY * -0.0001;            
+            //this.yangle += evt.deltaY * -0.0001;            
+            this.zangle += evt.deltaY * -0.0001;            
             
             this.paramsData.Update(this.#getViewMatrix().Buffer);
         }

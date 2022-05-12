@@ -1,15 +1,30 @@
 class Matrix
 {
-    constructor(dimX, dimY, data)
+    constructor(rowsCount, columnsCount, data)
     {
-        this.dimX = dimX;
-        this.dimY = dimY;
+        this.rowsCount = rowsCount;
+        this.columnsCount = columnsCount;
         this.data = data;
     }
 
     get Buffer()
     {
         return this.data;
+    }
+
+    GetIndex(row, column)
+    {
+        return row * this.rowsCount + column;
+    }
+
+    GetByIndex(row, column)
+    {
+        return this.data[this.GetIndex(row, column)];
+    }
+
+    SetByIndex(row, column, value)
+    {
+        this.data[this.GetIndex(row, column)] = value;
     }
 
     Scale(scale) 
@@ -23,7 +38,23 @@ class Matrix
 
     Multiply(otherMatrix)
     {
-        throw "to do";
+        const m = this.rowsCount;
+        const n = otherMatrix.rowsCount;
+        const p = otherMatrix.columnsCount;
+
+        const result = new Matrix(m, p, new Array(m * p));
+
+        for (let i = 0; i < m; i++)
+            for (let j = 0; j < p; j++)
+                {
+                    let sum = 0;
+                    for (let k = 0; k < n; k++)
+                        sum += this.GetByIndex(i, k) * otherMatrix.GetByIndex(k, j);
+                    result.SetByIndex(i, j, sum);
+                }
+
+        // save
+        return result;
     }
 }
 
@@ -56,39 +87,81 @@ class Matrix4 extends Matrix
             ]);
     }
 
-    Zoom(scale) 
+    static RotateX(angle)
     {
-        this.data[15] = 1 / scale;
-    }
+        return new Matrix4(
+            [
+                1.0, 0,               0,                0,
+                0,   Math.cos(angle), -Math.sin(angle), 0,
+                0,   Math.sin(angle), Math.cos(angle),  0,
+                0,   0,               0,                1.0
+            ]);
+    }    
 
-    Perspective(angleOfView = 90, imageAspectRatio = 1, near = 0.1, far = 100) 
+    static RotateY(angle)
+    {
+        return new Matrix4(
+            [
+                Math.cos(angle),  0,   Math.sin(angle), 0,
+                0,                1.0, 0,               0,
+                -Math.sin(angle), 0,   Math.cos(angle), 0,
+                0,                0,   0,               1.0
+            ]);
+    } 
+
+    static RotateZ(angle)
+    {
+        return new Matrix4(
+            [
+                Math.cos(angle), -Math.sin(angle), 0,   0,
+                Math.sin(angle), Math.cos(angle),  0,   0,
+                0,               0,                1.0, 0,
+                0,               0,                0,   1.0
+            ]);
+    } 
+
+    static RotateXYZ(xa, ya, za)
+    {
+        const v = xa;
+        const b = ya;
+        const a = za;
+
+        const sinV = Math.sin(v);
+        const sinB = Math.sin(b);
+        const sinA = Math.sin(a);
+        const cosV = Math.cos(v);
+        const cosB = Math.cos(b);
+        const cosA = Math.cos(a);
+
+        return new Matrix4(
+            [
+                cosB * cosV, sinA * sinB * cosV - cosA * sinV, cosA * sinB * cosV + sinA * sinV, 0,
+                cosB * sinV, sinA * sinB * sinV + cosA * cosV, cosA * sinB * sinV - sinA * cosV, 0,
+                -sinB,       sinA * cosB,                      cosA * cosB,                      0,
+                0,           0,                                0,                                1.0
+            ]);
+    } 
+
+    static Perspective(angleOfView = 90, imageAspectRatio = 1, near = 0.1, far = 100)
     {
         const scale = Math.tan(angleOfView * 0.5 * Math.PI / 180) * near; 
         const r = imageAspectRatio * scale;
         const l = -r; 
         const t = scale;
-        const b = -t;      
-        
-        const data = this.data;
+        const b = -t;  
 
-        data[0] = 2 * near / (r - l); 
-        data[1] = 0; 
-        data[2] = 0; 
-        data[3] = 0; 
-     
-        data[4] = 0; 
-        data[5] = 2 * near / (t - b); 
-        data[6] = 0; 
-        data[7] = 0; 
-     
-        data[8] = (r + l) / (r - l); 
-        data[9] = (t + b) / (t - b); 
-        data[10] = -(far + near) / (far - near); 
-        data[11] = -1; 
-     
-        data[12] = 0; 
-        data[13] = 0; 
-        data[14] = -2 * far * near / (far - near); 
-        data[15] = 0;         
+        return new Matrix4(
+            [
+                2 * near / (r - l), 0,                  0,                              0,
+                0,                  2 * near / (t - b), 0,                              0,
+                (r + l) / (r - l),  (t + b) / (t - b),  -(far + near) / (far - near),   -1,
+                0,                  0,                  -2 * far * near / (far - near), 0
+            ]);        
+    }
+
+
+    Zoom(scale) 
+    {
+        this.data[15] = 1 / scale;
     }
 }
