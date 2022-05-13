@@ -37,7 +37,7 @@ class Engine {
 
         //this.view = new View(canvasRef, adapter, device, context);
         this.view = new MSAAView(canvasRef, adapter, device, context);
-        //this.view.EnableDepth = true;
+        this.view.EnableDepth = true;
 
         device.onuncapturederror = (event) => {
             if (event.error instanceof GPUValidationError) {
@@ -62,8 +62,9 @@ class Engine {
         const viewMatrix = Matrix4.One();
         viewMatrix.Zoom(this.scale);
 
-        return viewMatrix
-            .Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
+        //return viewMatrix.Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
+
+        return viewMatrix.Multiply(Matrix4.RotateX(this.xangle));
 
         //return viewMatrix;
 
@@ -142,9 +143,9 @@ class Engine {
 
             //this.scale += evt.deltaY * -0.0001;
             
-            //this.xangle += evt.deltaY * -0.0001;            
+            this.xangle += evt.deltaY * -0.0001;            
             //this.yangle += evt.deltaY * -0.0001;            
-            this.zangle += evt.deltaY * -0.0001;            
+            //this.zangle += evt.deltaY * -0.0001;            
             
             this.paramsData.Update(this.#getViewMatrix().Buffer);
         }

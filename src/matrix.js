@@ -122,16 +122,16 @@ class Matrix4 extends Matrix
 
     static RotateXYZ(xa, ya, za)
     {
-        const v = xa;
+        const a = xa;
         const b = ya;
-        const a = za;
+        const v = za;
 
-        const sinV = Math.sin(v);
-        const sinB = Math.sin(b);
         const sinA = Math.sin(a);
-        const cosV = Math.cos(v);
-        const cosB = Math.cos(b);
+        const sinB = Math.sin(b);
+        const sinV = Math.sin(v);
         const cosA = Math.cos(a);
+        const cosB = Math.cos(b);
+        const cosV = Math.cos(v);
 
         return new Matrix4(
             [
