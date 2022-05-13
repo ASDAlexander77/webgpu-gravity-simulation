@@ -366,7 +366,7 @@ class SquaresMesh extends ComputedMesh {
             // position
             instancesInitData.push(diam * Math.random() - radius);
             instancesInitData.push(diam * Math.random() - radius);
-            instancesInitData.push(0);
+            instancesInitData.push(-0.1);
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // velocity
