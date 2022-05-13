@@ -352,7 +352,9 @@ class SquaresMesh extends ComputedMesh {
         this.vertexCount = 4;
         this.instanceCount = count;
 
+        const z = 0.0;
         const radius = 1;
+        const _size = 0.01;
         const diam = 2 * radius;
 
         const instancesInitData = [];
@@ -366,7 +368,7 @@ class SquaresMesh extends ComputedMesh {
             // position
             instancesInitData.push(diam * Math.random() - radius);
             instancesInitData.push(diam * Math.random() - radius);
-            instancesInitData.push(-0.1);
+            instancesInitData.push(z);
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // velocity
@@ -376,7 +378,7 @@ class SquaresMesh extends ComputedMesh {
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // mass, size, align, align
-            const size = 0.01 * Math.random() + 0.01;
+            const size = _size * Math.random() + _size / 10;
             //const size = 0.01;
             const mass = size;
             instancesInitData.push(mass);

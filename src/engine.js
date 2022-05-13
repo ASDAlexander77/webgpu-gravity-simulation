@@ -62,8 +62,9 @@ class Engine {
         const viewMatrix = Matrix4.One();
         viewMatrix.Zoom(this.scale);
 
+        return viewMatrix;
+        //return viewMatrix.Multiply(Matrix4.RotateZ(this.zangle)).Multiply(Matrix4.RotateY(this.yangle)).Multiply(Matrix4.RotateX(this.xangle));
         //return viewMatrix.Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
-        return viewMatrix.Multiply(Matrix4.RotateZ(this.zangle)).Multiply(Matrix4.RotateY(this.yangle)).Multiply(Matrix4.RotateX(this.xangle));
     }
 
     #draw() {
@@ -129,9 +130,9 @@ class Engine {
         this.canvasRef.onwheel = (evt) => {
             evt.preventDefault();
 
-            //this.scale += evt.deltaY * -0.0001;
+            this.scale += evt.deltaY * -0.0001;
             
-            this.xangle += evt.deltaY * -0.0001;            
+            //this.xangle += evt.deltaY * -0.0001;            
             //this.yangle += evt.deltaY * -0.0001;            
             //this.zangle += evt.deltaY * -0.0001;            
             
