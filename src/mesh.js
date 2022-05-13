@@ -353,7 +353,7 @@ class SquaresMesh extends ComputedMesh {
         this.vertexCount = 4;
         this.instanceCount = count;
 
-        const z = 0.0;
+        const z = 0.5;
         const radius = 1;
         const _size = 0.01;
         const diam = 2 * radius;
