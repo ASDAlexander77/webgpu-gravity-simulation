@@ -159,6 +159,17 @@ class Matrix4 extends Matrix
             ]);        
     }
 
+    static ZoomXY(scale)
+    {
+        return new Matrix4(
+            [
+                scale, 0,     0,   0,
+                0,     scale, 0,   0,
+                0,     0,     1.0, 0,
+                0,     0,     0,   1.0
+            ]);
+    }     
+
     static Zoom(scale)
     {
         return new Matrix4(

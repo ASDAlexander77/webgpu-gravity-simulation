@@ -59,7 +59,7 @@ class Engine {
     }
 
     #getViewMatrix() {
-        const viewMatrix = Matrix4.One().Multiply(Matrix4.Zoom(this.scale));
+        const viewMatrix = Matrix4.One().Multiply(Matrix4.ZoomXY(this.scale));
         return viewMatrix.Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
     }
 
