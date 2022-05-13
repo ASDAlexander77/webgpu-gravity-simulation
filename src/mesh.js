@@ -105,6 +105,7 @@ class Mesh {
             };
 
             pipelineDescr.primitive.cullMode = 'back';
+            pipelineDescr.primitive.unclippedDepth = true;
         }
 
         return this.engine.device.createRenderPipeline(pipelineDescr);
