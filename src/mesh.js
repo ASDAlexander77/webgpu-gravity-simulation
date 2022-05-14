@@ -106,7 +106,7 @@ class Mesh {
 
             pipelineDescr.primitive.cullMode = 'back';
             // must have feature - "depth-clip-control"
-            pipelineDescr.primitive.unclippedDepth = true;
+            //pipelineDescr.primitive.unclippedDepth = true;
         }
 
         return this.engine.device.createRenderPipeline(pipelineDescr);

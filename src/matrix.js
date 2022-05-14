@@ -142,20 +142,17 @@ class Matrix4 extends Matrix
             ]);
     } 
 
-    static Perspective(angleOfView = 90, imageAspectRatio = 1, near = 0.1, far = 100)
+    static Perspective(angleOfView = 90, imageAspectRatio = 1, near = 1, far = 100)
     {
-        const scale = Math.tan(angleOfView * 0.5 * Math.PI / 180) * near; 
-        const r = imageAspectRatio * scale;
-        const l = -r; 
-        const t = scale;
-        const b = -t;  
+        const planeDifference = far - near;
+        const scale = 1 / Math.tan(angleOfView / 2); 
 
         return new Matrix4(
             [
-                2 * near / (r - l), 0,                  0,                              0,
-                0,                  2 * near / (t - b), 0,                              0,
-                (r + l) / (r - l),  (t + b) / (t - b),  -(far + near) / (far - near),   -1,
-                0,                  0,                  -2 * far * near / (far - near), 0
+                scale / imageAspectRatio, 0,     0,                             0,
+                0,                        scale, 0,                             0,
+                0,                        0,     -far / planeDifference,        -1,
+                0,                        0,     -far * near / planeDifference, 0
             ]);        
     }
 
