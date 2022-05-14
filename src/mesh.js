@@ -89,6 +89,7 @@ class Mesh {
             vertex: this.#getVertexDescr(),
             fragment: this.#getFragmentDescr(view),
             primitive: this.#getPrimitiveDescr(),
+            layout: 'auto'
         };
 
         if (view.MultiSample) {
@@ -285,7 +286,8 @@ class ComputedMesh extends Mesh {
             compute: {
                 module: this.computeShaderModule,
                 entryPoint: 'main',
-            }
+            },
+            layout: 'auto'
         };
 
         return this.engine.device.createComputePipeline(computePipelineDescr);
