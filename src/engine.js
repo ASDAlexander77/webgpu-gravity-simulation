@@ -158,7 +158,7 @@ class Engine {
                 passEncoder.setPipeline(mesh.ComputePipeline);
                 passEncoder.setBindGroup(0, mesh.CurrentBindGroup(this.tick));
                 passEncoder.setBindGroup(1, mesh.ParamsBindGroup);
-                passEncoder.dispatchWorkgroups(Math.ceil(mesh.instanceCount / 64));
+                passEncoder.dispatch(Math.ceil(mesh.instanceCount / 64));
                 passEncoder.end();
             }
 

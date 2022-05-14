@@ -33,6 +33,16 @@
             "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
             "runtimeArgs": [
             ]
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "WEBGPU Launch Edge against localhost",
+            "url": "file:///${workspaceFolder}/index.html",
+            "webRoot": "${workspaceFolder}",
+            "runtimeExecutable": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+            "runtimeArgs": [
+            ]
         }        
     ]
 }

@@ -53,17 +53,17 @@
 <body>
     <textarea id="draw_wgsl">
         struct ViewParams {
-            modelViewProjectionMatrix : mat4x4<f32>,
+            modelViewProjectionMatrix : mat4x4<f32>;
         };
 
         struct MassSize {
-            mass: f32,
-            size: f32,
+            mass: f32;
+            size: f32;
         };
 
         struct VertexOutput {
-            @builtin(position) Position : vec4<f32>,
-            @location(0) fragUV : vec2<f32>,
+            @builtin(position) Position : vec4<f32>;
+            @location(0) fragUV : vec2<f32>;
         };
 
         @binding(0) @group(0) var currentSampler: sampler;
@@ -93,19 +93,19 @@
     </textarea>
     <textarea id="calc_wgsl_">
         struct MassSize {
-            mass: f32,
-            size: f32,
+            mass: f32;
+            size: f32;
         };
 
         struct Instance {
-            @size(16) force: vec3<f32>, 
-            @size(16) position : vec3<f32>,
-            @size(16) velocity : vec3<f32>,
-            @size(16) mass_size: MassSize,
+            @size(16) force: vec3<f32>;
+            @size(16) position : vec3<f32>;
+            @size(16) velocity : vec3<f32>;
+            @size(16) mass_size: MassSize;
         };
 
         struct Instances {
-            instances : array<Instance>,
+            instances : array<Instance>;
         };
 
         @binding(0) @group(0) var<storage, read> instancesIn : Instances;
@@ -128,25 +128,25 @@
     </textarea>
     <textarea id="calc_wgsl">
         struct SimParams {
-            time: f32,
+            time: f32;
         };
 
         struct MassSize {
-            mass: f32,
-            size: f32,
-            debug1: f32,
-            debug2: f32
+            mass: f32;
+            size: f32;
+            debug1: f32;
+            debug2: f32;
         };
 
         struct Instance {
-            @size(16) force: vec3<f32>, 
-            @size(16) position : vec3<f32>,
-            @size(16) velocity : vec3<f32>,
-            @size(16) mass_size: MassSize,
+            @size(16) force: vec3<f32>;
+            @size(16) position : vec3<f32>;
+            @size(16) velocity : vec3<f32>;
+            @size(16) mass_size: MassSize;
         };
 
         struct Instances {
-            instances : array<Instance>,
+            instances : array<Instance>;
         };
 
         @binding(0) @group(0) var<storage, read> instancesIn : Instances;
