@@ -25,6 +25,10 @@ class Engine {
     async #getWebGPU() {
         const canvasRef = this.canvasRef = document.getElementById("renderCanvas");
         const adapter = this.adapter = await navigator.gpu.requestAdapter();
+
+        const features = [];
+        for (const v of adapter.features.values()) features.push(v);
+
         this.device = await adapter.requestDevice();
         this.context = canvasRef.getContext('webgpu');
     }
