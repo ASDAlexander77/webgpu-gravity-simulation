@@ -58,13 +58,14 @@ class Engine {
 
         this.paramsData = new UniformData(
             this,
-            this.#getViewMatrix().Buffer,
+            this.#getViewMatrix(),
         );        
     }
 
     #getViewMatrix() {
-        const viewMatrix = Matrix4.One().Multiply(Matrix4.ZoomXY(this.scale));
-        return viewMatrix.Multiply(Matrix4.RotateXYZ(this.xangle, this.yangle, this.zangle));
+        const view = mat4.create();
+        mat4.scale(view, view, vec3.fromValues(this.scale, this.scale, 1));
+        return view;
     }
 
     #draw() {
@@ -136,7 +137,7 @@ class Engine {
             //this.yangle += evt.deltaY * -0.0001;            
             //this.zangle += evt.deltaY * -0.0001;            
             
-            this.paramsData.Update(this.#getViewMatrix().Buffer);
+            this.paramsData.Update(this.#getViewMatrix());
         }
     }
 
