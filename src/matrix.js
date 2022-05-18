@@ -1566,7 +1566,7 @@ class mat4 {
      * Alias for {@link mat4.perspectiveNO}
      * @function
      */
-    perspective = perspectiveNO;
+    static perspective = mat4.perspectiveNO;
 
     /**
      * Generates a perspective projection matrix suitable for WebGPU with the given bounds.
@@ -1687,7 +1687,7 @@ class mat4 {
      * Alias for {@link mat4.orthoNO}
      * @function
      */
-    ortho = orthoNO;
+    static ortho = mat4.orthoNO;
 
     /**
      * Generates a orthogonal projection matrix with the given bounds.

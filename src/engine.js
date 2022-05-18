@@ -65,6 +65,13 @@ class Engine {
     #getViewMatrix() {
         const view = mat4.create();
         mat4.scale(view, view, vec3.fromValues(this.scale, this.scale, 1));
+
+        // const projectionMatrix = mat4.create();
+        // const aspect = 1;
+        // mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
+
+        // mat4.multiply(view, view, projectionMatrix);
+
         return view;
     }
 
