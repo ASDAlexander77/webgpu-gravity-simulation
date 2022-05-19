@@ -66,11 +66,44 @@ class Engine {
         const view = mat4.create();
         mat4.scale(view, view, vec3.fromValues(this.scale, this.scale, 1));
 
-        // const projectionMatrix = mat4.create();
-        // const aspect = 1;
-        // mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
+        if (this.view.EnableDepth)
+        {
+            mat4.scale(view, view, vec3.fromValues(3, 3, 1));
+            mat4.translate(view, view, vec3.fromValues(0, 0, -4));
 
-        // mat4.multiply(view, view, projectionMatrix);
+            const projectionMatrix = mat4.create();
+            const aspect = 1;
+            mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
+
+            let viewProj = mat4.create();
+            mat4.multiply(viewProj, projectionMatrix, view);
+
+            /*
+            let res0 = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res0, viewProj, vec4.fromValues(0, 0, 0, 1));
+            let res1 = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res1, viewProj, vec4.fromValues(-0.5, 0.5, 0, 1));
+            let res2 = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res2, viewProj, vec4.fromValues(-0.5, -0.5, 0, 1));
+            let res3 = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res3, viewProj, vec4.fromValues(0.5, 0.5, 0, 1));
+            let res4 = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res4, viewProj, vec4.fromValues(0.5, -0.5, 0, 1));
+
+            let res0z = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res0z, viewProj, vec4.fromValues(0, 0, 1, 1));
+            let res1z = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res1z, viewProj, vec4.fromValues(-0.5, 0.5, 1, 1));
+            let res2z = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res2z, viewProj, vec4.fromValues(-0.5, -0.5, 1, 1));
+            let res3z = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res3z, viewProj, vec4.fromValues(0.5, 0.5, 1, 1));
+            let res4z = vec4.fromValues(0, 0, 0, 0);
+            vec4.multiplyByMatrix(res4z, viewProj, vec4.fromValues(0.5, -0.5, 1, 1));
+            */
+
+            return viewProj;
+        }
 
         return view;
     }
@@ -116,14 +149,29 @@ class Engine {
 
         let r = `<table id="tbldbg"><tr><td></td><td>x</td><td>y</td><td>z</td></tr>`;
 
-        const cnt = Math.min(instancesCloneData.Data.length / 16, 10);
+        let vis_cnt = 0;
+        const cut_vis_cnt = 50;
+        const cnt = instancesCloneData.Data.length / 16;
         for (let i = 0; i < cnt; i++) {
             const offset = i * 16;
+
+            if (data[12 + offset] <= 0.0)
+                continue;
+
+            vis_cnt++;
+            if (vis_cnt > cut_vis_cnt)
+            {
+                break;
+            }
+
+            /*
             r += `<tr><td>F</td><td>${data[0 + offset].toFixed(12)}</td><td>${data[1 + offset].toFixed(12)}</td><td>${data[2 + offset].toFixed(12)}</td></tr>
                   <tr><td>Pos</td><td>${data[4 + offset].toFixed(12)}</td><td>${data[5 + offset].toFixed(12)}</td><td>${data[6 + offset].toFixed(12)}</td></tr>
                   <tr><td>V</td><td>${data[8 + offset].toFixed(12)}</td><td>${data[9 + offset].toFixed(12)}</td><td>${data[10 + offset].toFixed(12)}</td></tr>
                   <tr><td>Mass</td><td>${data[12 + offset].toFixed(12)}</td><td>Size</td><td>${data[13 + offset].toFixed(12)}</td></tr>
                   <tr><td>DBG1: R</td><td>${data[14 + offset].toFixed(12)}</td><td>DBG2: Dist</td><td>${data[15 + offset].toFixed(12)}</td></tr>`;
+            */
+            r += `<tr><td>Pos</td><td>${data[4 + offset].toFixed(12)}</td><td>${data[5 + offset].toFixed(12)}</td><td>${data[6 + offset].toFixed(12)}</td></tr>`;
         }
 
         r += `</table>`;

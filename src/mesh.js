@@ -382,8 +382,7 @@ class SquaresMesh extends ComputedMesh {
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // mass, size, align, align
-            const size = _size * Math.random() + _size / 10;
-            //const size = 0.01;
+            const size = _size * Math.random() + _size / 10;            
             const mass = size;
             instancesInitData.push(mass);
             instancesInitData.push(size);

@@ -824,3 +824,28 @@ class vec3 {
     };
   })();
 }
+
+class vec4
+{
+  static fromValues(x, y, z, w) {
+    let out = new glMatrix.ARRAY_TYPE(4);
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+    return out;
+  }
+
+  static multiplyByMatrix(out, a, b) {
+    const b0 = b[0],
+          b1 = b[1],
+          b2 = b[2],
+          b3 = b[3];
+
+    out[0] = a[0] * b0 + a[1] * b1 + a[2] * b2 + a[3] * b3;
+    out[1] = a[4] * b0 + a[5] * b1 + a[6] * b2 + a[7] * b3;
+    out[2] = a[8] * b0 + a[9] * b1 + a[10] * b2 + a[11] * b3;
+    out[3] = a[12] * b0 + a[13] * b1 + a[14] * b2 + a[15] * b3;
+    return out;
+  }
+}
