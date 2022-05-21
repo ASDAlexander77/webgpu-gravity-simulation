@@ -78,7 +78,7 @@ class View
             canvasRef.clientWidth * devicePixelRatio,
             canvasRef.clientHeight * devicePixelRatio,
         ];
-        const presentationFormat = this.presentationFormat = context.getPreferredFormat(adapter);
+        const presentationFormat = this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
 
         context.configure({
             device,

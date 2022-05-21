@@ -68,8 +68,11 @@ class Engine {
 
         if (this.view.EnableDepth)
         {
-            mat4.scale(view, view, vec3.fromValues(3, 3, 1));
+            mat4.scale(view, view, vec3.fromValues(2.5, 2.5, 1));
             mat4.translate(view, view, vec3.fromValues(0, 0, -4));
+
+            mat4.rotateX(view, view, this.xangle);            
+            mat4.rotateY(view, view, this.yangle);            
 
             const projectionMatrix = mat4.create();
             const aspect = 1;
@@ -188,12 +191,31 @@ class Engine {
 
             this.scale += evt.deltaY * -0.0001;
             
-            //this.xangle += evt.deltaY * -0.0001;            
-            //this.yangle += evt.deltaY * -0.0001;            
-            //this.zangle += evt.deltaY * -0.0001;            
-            
             this.paramsData.Update(this.#getViewMatrix());
         }
+
+        this.canvasRef.onmousedown = (evt) => {
+            this.mousePressed = true;
+        }
+
+        this.canvasRef.onmouseup = (evt) => {
+            this.mousePressed = false;
+        }
+
+        this.canvasRef.onmousemove = (evt) => {
+
+            if (!this.mousePressed || evt.movementX == 0 && evt.movementY == 0)
+            {
+                return;
+            }
+
+            evt.preventDefault();
+
+            this.xangle += evt.movementY * 0.001;            
+            this.yangle += evt.movementX * 0.001;            
+            
+            this.paramsData.Update(this.#getViewMatrix());
+        }        
     }
 
     async #drawLogic() {
