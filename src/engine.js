@@ -81,30 +81,6 @@ class Engine {
             let viewProj = mat4.create();
             mat4.multiply(viewProj, projectionMatrix, view);
 
-            /*
-            let res0 = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res0, viewProj, vec4.fromValues(0, 0, 0, 1));
-            let res1 = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res1, viewProj, vec4.fromValues(-0.5, 0.5, 0, 1));
-            let res2 = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res2, viewProj, vec4.fromValues(-0.5, -0.5, 0, 1));
-            let res3 = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res3, viewProj, vec4.fromValues(0.5, 0.5, 0, 1));
-            let res4 = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res4, viewProj, vec4.fromValues(0.5, -0.5, 0, 1));
-
-            let res0z = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res0z, viewProj, vec4.fromValues(0, 0, 1, 1));
-            let res1z = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res1z, viewProj, vec4.fromValues(-0.5, 0.5, 1, 1));
-            let res2z = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res2z, viewProj, vec4.fromValues(-0.5, -0.5, 1, 1));
-            let res3z = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res3z, viewProj, vec4.fromValues(0.5, 0.5, 1, 1));
-            let res4z = vec4.fromValues(0, 0, 0, 0);
-            vec4.multiplyByMatrix(res4z, viewProj, vec4.fromValues(0.5, -0.5, 1, 1));
-            */
-
             return viewProj;
         }
 

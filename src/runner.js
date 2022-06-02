@@ -21,11 +21,11 @@ class Runner {
 
         this.engine.setScene(scene);
 
-        const squaresMesh = new SquaresMesh(this.engine, count);
-        squaresMesh.Shader = "draw_wgsl";
-        squaresMesh.ComputeShader = "calc_wgsl";
-        await squaresMesh.addSvg("svg1");
+        const gravityMesh = new GravityMesh(this.engine, count);
+        gravityMesh.Shader = "draw_wgsl";
+        gravityMesh.ComputeShader = "calc_wgsl";
+        await gravityMesh.addSvg("svg1");
 
-        scene.addMesh(squaresMesh);
+        scene.addMesh(gravityMesh);
     }
 }
