@@ -1,19 +1,19 @@
 
 class LifeMesh extends ComputedMesh {
-    constructor(engine, count) {
+    constructor(engine, width) {
         super(engine);
         this.vertexCount = 4;
-        this.instanceCount = count;
+        this.instanceCount = width * width;
 
         const z = 0.0;
         const radius = 1;
 
         let x = -radius;
         let y = radius;
-        const step = 0.1;
+        const step = (2 * radius) / (width - 1);
 
         const instancesInitData = [];
-        for (let i = 0; i < count; i++) {
+        for (let i = 0; i < this.instanceCount; i++) {
             // position
             instancesInitData.push(x);
             instancesInitData.push(y);
@@ -22,18 +22,24 @@ class LifeMesh extends ComputedMesh {
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // size, align, align, align
-            const size = 1 / 10;            
+            let size = step;            
+
+            if (Math.random() < 0.5)
+            {
+                size = 0;
+            }
+
             instancesInitData.push(size);
             instancesInitData.push(0);
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             x += step;
-            if (x > radius)
+            if (x >= radius)
             {
                 x = -radius;
                 y -= step;
-                if (y < -radius)
+                if (y <= -radius)
                 {
                     y = radius;
                 }
@@ -68,6 +74,8 @@ class LifeMesh extends ComputedMesh {
         const paramsInitData = [
             // delta time
             50.0,
+            width,
+            step,
         ];
 
         this.paramsData = new UniformData(

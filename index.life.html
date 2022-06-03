@@ -94,6 +94,8 @@
     <textarea id="calc_wgsl">
         struct SimParams {
             time: f32,
+            width: f32,
+            size: f32,
         };
 
         struct LifeInfo {
@@ -115,7 +117,25 @@
         @binding(0) @group(0) var<storage, read> instancesIn : Instances;
         @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
         @binding(0) @group(1) var<uniform> params : SimParams;
-    
+
+        fn getLife(pos : u32, count : u32) -> u32 {
+            if (pos < 0) {
+                return 0;
+            }
+
+            if (pos >= count) {
+                return 0;
+            }
+
+            var second = instancesIn.instances[pos];
+            if (second.life_info.size > 0.0)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
+
         @stage(compute) @workgroup_size(64)
         fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             var time = params.time;
@@ -127,9 +147,37 @@
                 return;
             }
 
+            var width : u32 = u32(params.width);
+
             var first = instancesIn.instances[threadIndex];
 
             instancesOut.instances[threadIndex] = first;
+
+            var countLifes : u32 = 0u;
+            countLifes += getLife(threadIndex - 1 - width, count);
+            countLifes += getLife(threadIndex - 1        , count);
+            countLifes += getLife(threadIndex - 1 + width, count);
+            countLifes += getLife(threadIndex     + width, count);
+            countLifes += getLife(threadIndex + 1 + width, count);
+            countLifes += getLife(threadIndex + 1        , count);
+            countLifes += getLife(threadIndex + 1 - width, count);
+            countLifes += getLife(threadIndex     - width, count);
+
+            if (countLifes <= 1)
+            {
+                // die
+                instancesOut.instances[threadIndex].life_info.size = 0.0;
+            }
+            else if (countLifes >= 4)
+            {
+                // die of overcrowding
+                instancesOut.instances[threadIndex].life_info.size = 0.0;
+            }
+            else if (countLifes == 3)
+            {
+                // new life
+                instancesOut.instances[threadIndex].life_info.size = params.size;
+            }
         }
     </textarea>
     <svg id="svg1" width="100" height="100" style="display:none;">
@@ -161,7 +209,7 @@
                 // 300 000 - crash, 100 000 - very slow
                 // 35 000 speed is fine       
                 //await this.#createScene(350);
-                await this.#createScene(21 * 21);
+                await this.#createScene(100);
                 this.engine.draw();
             }
 
