@@ -87,7 +87,7 @@
         
         @stage(fragment)
         fn frag_main(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
-          let texColor = textureSample(currentTexture, currentSampler, fragUV * 0.8 + vec2<f32>(0.1, 0.1));            
+          let texColor = textureSample(currentTexture, currentSampler, fragUV);
           return vec4<f32>(texColor.r, texColor.g, texColor.b, 1.0);
         }        
     </textarea>
@@ -278,7 +278,7 @@
         }
     </textarea>
     <svg id="svg1" width="100" height="100" style="display:none;">
-        <circle cx="50" cy="50" r="36" stroke="green" stroke-width="4" fill="yellow" />
+        <circle cx="50" cy="50" r="45" stroke="red" stroke-width="4" fill="yellow" />
      </svg> 
     <canvas id="renderCanvas"></canvas>
     <div id="DEBUG"></div>
