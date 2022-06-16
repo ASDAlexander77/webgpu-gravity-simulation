@@ -1,0 +1,133 @@
+<html>
+<!DOCTYPE html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title></title>
+
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            background-color:cadetblue;
+        }
+
+        #DEBUG {
+            position: absolute;
+            z-index: 1;
+            width: 820px;
+            top: 10px;
+            left: 10px;
+            color: beige;
+            background-color:cadetblue;
+        }
+
+        textarea {
+            display: none;
+        }
+        
+        #tbldbg {
+            width: 800px;
+            color: blue;
+        }
+
+        td {
+            width: 200px;
+            overflow-x:hidden;
+        }
+
+    </style>
+</head>
+
+<body>
+    <textarea id="calc_wgsl">
+        struct SimParams {
+            time: f32,
+            width: f32,
+            size: f32,
+        };
+
+        struct LifeInfo {
+            size: f32,
+            dummy1: f32,
+            dummy2: f32,
+            dummy3: f32,
+        };
+
+        struct Instance {
+            @size(16) position : vec3<f32>,
+            @size(16) life_info: LifeInfo,
+        };
+
+        struct Instances {
+            instances : array<Instance>,
+        };
+
+        @binding(0) @group(0) var<storage, read> instancesIn : Instances;
+        @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
+        @binding(0) @group(1) var<uniform> params : SimParams;
+
+        @stage(compute) @workgroup_size(64)
+        fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
+            var time = params.time;
+            var count : u32 = arrayLength(&instancesIn.instances);
+
+            var threadIndex = GlobalInvocationID.x;
+            if (threadIndex >= count)
+            {
+                return;
+            }
+
+            var width : u32 = u32(params.width);
+
+            var first = instancesIn.instances[threadIndex];
+
+            instancesOut.instances[threadIndex] = first;
+        }
+    </textarea>
+    <canvas id="renderCanvas"></canvas>
+    <div id="DEBUG"></div>
+    <script src="src/common.js"></script>
+    <script src="src/vector.js"></script>
+    <script src="src/matrix.js"></script>
+    <script src="src/data.js"></script>
+    <script src="src/mesh.js"></script>
+    <script src="src/scene.js"></script>
+    <script src="src/view.js"></script>
+    <script src="src/engine.js"></script>
+    <script src="src/custom/lifemesh.js"></script>
+    <script>
+        class Runner {
+            constructor() {
+                this.engine = new Engine();
+            }
+
+            async run() {
+                await this.engine.init();
+                await this.#runLogic();
+            }
+
+            async #runLogic() {
+                const dataMesh = new DataMesh(this.engine, count);
+                dataMesh.ComputeShader = "calc_wgsl";
+
+                this.engine.compute(dataMesh);
+            }
+        }
+
+        (async () => await new Runner().run())();        
+    </script>
+</body>
+
+</html>

@@ -22,6 +22,10 @@ class Engine {
         this.#draw();
     }
 
+    compute(mesh, copy) {
+        this.#compute(mesh, copy);
+    }
+
     async #getWebGPU() {
         const canvasRef = this.canvasRef = document.getElementById("renderCanvas");
         const adapter = this.adapter = await navigator.gpu.requestAdapter();
@@ -197,8 +201,6 @@ class Engine {
     async #drawLogic() {
         const device = this.device;
 
-        this.tick++;
-
         const renderPassDescriptor = this.view.RenderPassDescriptor;
 
         const commandEncoders = [];
@@ -206,12 +208,14 @@ class Engine {
 
         for (const mesh of this.scene.meshes) {
 
+            mesh.Swap();
+
             if (mesh.computeShaderModule)
             {
                 // calc
                 const passEncoder = commandEncoder.beginComputePass();
                 passEncoder.setPipeline(mesh.ComputePipeline);
-                passEncoder.setBindGroup(0, mesh.CurrentBindGroup(this.tick));
+                passEncoder.setBindGroup(0, mesh.CurrentBindGroup());
                 passEncoder.setBindGroup(1, mesh.ParamsBindGroup);
                 passEncoder.dispatchWorkgroups(Math.ceil(mesh.instanceCount / 64));
                 passEncoder.end();
@@ -219,7 +223,7 @@ class Engine {
 
             if (mesh.shaderModule)
             {
-                const drawBuffer = mesh.CurrentInstancesData(this.tick);
+                const drawBuffer = mesh.CurrentInstancesData();
 
                 // draw
                 {
@@ -255,7 +259,7 @@ class Engine {
             }
 
             if (DEBUG) {
-                const copyCmdDbg = mesh.GetCopyDataToCloneCmd(this.tick);
+                const copyCmdDbg = mesh.GetCopyDataToCloneCmd();
                 commandEncoders.push(copyCmdDbg.finish());
             }
         }
@@ -271,4 +275,34 @@ class Engine {
 
         return true;
     }
+
+    #compute(mesh, copy) {
+        const device = this.device;
+
+        mesh.Swap();
+
+        const commandEncoders = [];
+        const commandEncoder = device.createCommandEncoder();
+
+        if (mesh.computeShaderModule)
+        {
+            // calc
+            const passEncoder = commandEncoder.beginComputePass();
+            passEncoder.setPipeline(mesh.ComputePipeline);
+            passEncoder.setBindGroup(0, mesh.CurrentBindGroup());
+            passEncoder.setBindGroup(1, mesh.ParamsBindGroup);
+            passEncoder.dispatchWorkgroups(Math.ceil(mesh.instanceCount / 64));
+            passEncoder.end();
+
+            if (copy) {
+                const copyCmdDbg = mesh.GetCopyDataToCloneCmd();
+                commandEncoders.push(copyCmdDbg.finish());
+            }
+        }
+
+        commandEncoders.unshift(commandEncoder.finish());
+        device.queue.submit(commandEncoders);
+
+        return true;
+    }    
 }

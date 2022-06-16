@@ -1,6 +1,7 @@
 class Mesh {
     constructor(engine) {
         this.engine = engine;
+        this.tick = -1;
     }
 
     set Shader(elementId) {
@@ -25,9 +26,14 @@ class Mesh {
         return this.instancesSwapData.Buffer;
     }
 
-    CurrentInstancesData(tick) {
+    Swap()
+    {
+        this.tick++;
+    }
+
+    CurrentInstancesData() {
         if (this.InstancesSwapDataBuffer) {
-            return tick % 2
+            return this.tick % 2
                 ? this.InstancesSwapDataBuffer
                 : this.InstancesDataBuffer;
         }
@@ -43,9 +49,9 @@ class Mesh {
         return this.textureBindGroup || (this.textureBindGroup = this.#createTextureBindGroup());
     }
 
-    GetCopyDataToCloneCmd(tick)
+    GetCopyDataToCloneCmd()
     {
-        const drawBuffer = this.CurrentInstancesData(tick);
+        const drawBuffer = this.CurrentInstancesData();
 
         const copyBufferCmd = this.engine.device.createCommandEncoder();
 
@@ -275,8 +281,8 @@ class ComputedMesh extends Mesh {
         return this.instancesCloneData.Buffer;
     }
 
-    CurrentBindGroup(tick) {
-        return tick % 2
+    CurrentBindGroup() {
+        return this.tick % 2
             ? this.InstancesDataBindGroup
             : this.InstancesSwapDataBindGroup;
     }
