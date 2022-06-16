@@ -67,7 +67,7 @@
 
         struct Instance {
             @size(16) position : vec3<f32>,
-            @size(16) life_info: LifeInfo,
+            @size(16) data_info: DataInfo,
         };
 
         struct Instances {
@@ -93,7 +93,7 @@
 
             var first = instancesIn.instances[threadIndex];
 
-            instancesOut.instances[threadIndex] = first;
+            instancesOut.instances[threadIndex] = first + vec3(1.0, 1.0, 1.0);
         }
     </textarea>
     <canvas id="renderCanvas"></canvas>
@@ -115,13 +115,16 @@
 
             async run() {
                 await this.engine.init();
-                this.#runLogic();
+                await this.#runLogic();
             }
 
-            #runLogic() {
+            async #runLogic() {
                 const dataMesh = new DataMesh(this.engine, 100);
                 dataMesh.ComputeShader = "calc_wgsl";
-                this.engine.compute(dataMesh);
+                this.engine.compute(dataMesh, true);
+
+                await dataMesh.instancesCloneData.LoadData();
+                const data = dataMesh.instancesCloneData.Data;                
             }
         }
 

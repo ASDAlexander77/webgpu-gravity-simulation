@@ -1,42 +1,28 @@
 
 class DataMesh extends ComputedMesh {
-    constructor(engine, width) {
+    constructor(engine, count) {
         super(engine);
-        this.instanceCount = width * width;
-
-        const z = 0.0;
-        const radius = 1;
-
-        const step = (2 * radius) / (width - 1);
+        this.instanceCount = count;
 
         const instancesInitData = [];
-        for (let y = 0; y < width; y++)
-            for (let x = 0; x < width; x++) {
-                // position
-                instancesInitData.push(x * step - radius);
-                instancesInitData.push(y * step - radius);
-                instancesInitData.push(z);
-                //instancesInitData.push(radius * Math.random());
-                instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
+        for (let i = 0; i < count; i++) {
+            // position
+            instancesInitData.push(1);
+            instancesInitData.push(2);
+            instancesInitData.push(3);
+            instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
-                // size, align, align, align
-                let size = step;            
-
-                if (Math.random() < 0.5)
-                {
-                    size = 0;
-                }
-
-                instancesInitData.push(size);
-                instancesInitData.push(0);
-                instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
-                instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
-            }
+            // data
+            instancesInitData.push(4);
+            instancesInitData.push(5);
+            instancesInitData.push(6); // align, FYI: without align compute shader will not point to correct offset
+            instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
+        }
 
         const instanceLayout = [
             // instance position
             { location: 0, type: 'float32', count: 4 },
-            // size, align, align
+            // data
             { location: 1, type: 'float32', count: 4 },
         ];
 
@@ -60,9 +46,9 @@ class DataMesh extends ComputedMesh {
 
         const paramsInitData = [
             // delta time
-            50.0,
-            width,
-            step,
+            0,
+            0,
+            0,
         ];
 
         this.paramsData = new UniformData(
