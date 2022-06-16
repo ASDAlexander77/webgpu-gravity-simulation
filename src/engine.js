@@ -206,6 +206,7 @@ class Engine {
 
         for (const mesh of this.scene.meshes) {
 
+            if (mesh.computeShaderModule)
             {
                 // calc
                 const passEncoder = commandEncoder.beginComputePass();
@@ -216,38 +217,41 @@ class Engine {
                 passEncoder.end();
             }
 
-            const drawBuffer = mesh.CurrentInstancesData(this.tick);
-
-            // draw
+            if (mesh.shaderModule)
             {
-                //this.#validati4onStart();
+                const drawBuffer = mesh.CurrentInstancesData(this.tick);
 
-                const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+                // draw
+                {
+                    //this.#validati4onStart();
 
-                const pipeline = mesh.getRenderPipeline(this.view);
+                    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 
-                passEncoder.setPipeline(pipeline);
+                    const pipeline = mesh.getRenderPipeline(this.view);
 
-                if (drawBuffer) {
-                    passEncoder.setVertexBuffer(0, drawBuffer);
+                    passEncoder.setPipeline(pipeline);
+
+                    if (drawBuffer) {
+                        passEncoder.setVertexBuffer(0, drawBuffer);
+                    }
+
+                    if (mesh.VertexBuffer) {
+                        passEncoder.setVertexBuffer(1, mesh.VertexBuffer);
+                    }
+
+                    if (mesh.HasTexture) {
+                        passEncoder.setBindGroup(0, mesh.TextureBindGroup);
+                    }
+
+                    passEncoder.setBindGroup(1, this.paramsData.getBindGroupFor(pipeline.getBindGroupLayout(1)));
+
+                    const firstVertex = 0;
+                    const firstInstance = 0;
+                    passEncoder.draw(mesh.vertexCount, mesh.instanceCount, firstVertex, firstInstance);
+                    passEncoder.end();
+
+                    //this.#errorStop();
                 }
-
-                if (mesh.VertexBuffer) {
-                    passEncoder.setVertexBuffer(1, mesh.VertexBuffer);
-                }
-
-                if (mesh.HasTexture) {
-                    passEncoder.setBindGroup(0, mesh.TextureBindGroup);
-                }
-
-                passEncoder.setBindGroup(1, this.paramsData.getBindGroupFor(pipeline.getBindGroupLayout(1)));
-
-                const firstVertex = 0;
-                const firstInstance = 0;
-                passEncoder.draw(mesh.vertexCount, mesh.instanceCount, firstVertex, firstInstance);
-                passEncoder.end();
-
-                //this.#errorStop();
             }
 
             if (DEBUG) {

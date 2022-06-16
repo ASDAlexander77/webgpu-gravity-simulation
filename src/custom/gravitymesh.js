@@ -7,7 +7,7 @@ class GravityMesh extends ComputedMesh {
 
         const z = 0.0;
         const radius = 1;
-        const _size = 0.01;
+        const _size = 0.0075;
         const diam = 2 * radius;
 
         const instancesInitData = [];

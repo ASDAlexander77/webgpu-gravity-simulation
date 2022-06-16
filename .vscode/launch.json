@@ -37,6 +37,16 @@
         {
             "type": "chrome",
             "request": "launch",
+            "name": "SC2 WEBGPU Launch Chrome against localhost",
+            "url": "file:///${workspaceFolder}/index.sc2sim.html",
+            "webRoot": "${workspaceFolder}",
+            "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
+            "runtimeArgs": [
+            ]
+        },        
+        {
+            "type": "chrome",
+            "request": "launch",
             "name": "Hello - WEBGPU Launch Chrome against localhost",
             "url": "file:///${workspaceFolder}/index.hello.html",
             "webRoot": "${workspaceFolder}",
