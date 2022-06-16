@@ -58,7 +58,7 @@
             size: f32,
         };
 
-        struct LifeInfo {
+        struct DataInfo {
             size: f32,
             dummy1: f32,
             dummy2: f32,
@@ -78,7 +78,7 @@
         @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
         @binding(0) @group(1) var<uniform> params : SimParams;
 
-        @stage(compute) @workgroup_size(64)
+        @compute @workgroup_size(64)
         fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             var time = params.time;
             var count : u32 = arrayLength(&instancesIn.instances);
@@ -106,7 +106,7 @@
     <script src="src/scene.js"></script>
     <script src="src/view.js"></script>
     <script src="src/engine.js"></script>
-    <script src="src/custom/lifemesh.js"></script>
+    <script src="src/custom/datamesh.js"></script>
     <script>
         class Runner {
             constructor() {
@@ -115,13 +115,12 @@
 
             async run() {
                 await this.engine.init();
-                await this.#runLogic();
+                this.#runLogic();
             }
 
-            async #runLogic() {
-                const dataMesh = new DataMesh(this.engine, count);
+            #runLogic() {
+                const dataMesh = new DataMesh(this.engine, 100);
                 dataMesh.ComputeShader = "calc_wgsl";
-
                 this.engine.compute(dataMesh);
             }
         }

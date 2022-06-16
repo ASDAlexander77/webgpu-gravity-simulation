@@ -70,7 +70,7 @@
         @binding(1) @group(0) var currentTexture: texture_2d<f32>;
         @binding(0) @group(1) var<uniform> viewParams : ViewParams;
 
-        @stage(vertex)
+        @vertex
         fn vert_main(
             @location(0) a_force : vec3<f32>, 
             @location(1) a_position : vec3<f32>, 
@@ -85,7 +85,7 @@
           return output;
         }
         
-        @stage(fragment)
+        @fragment
         fn frag_main(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
           let texColor = textureSample(currentTexture, currentSampler, fragUV);
           return vec4<f32>(texColor.r, texColor.g, texColor.b, 1.0);
@@ -111,7 +111,7 @@
         @binding(0) @group(0) var<storage, read> instancesIn : Instances;
         @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
 
-        @stage(compute) @workgroup_size(64)
+        @compute @workgroup_size(64)
         fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             var index : u32 = GlobalInvocationID.x;
             
@@ -153,7 +153,7 @@
         @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
         @binding(0) @group(1) var<uniform> params : SimParams;
     
-        @stage(compute) @workgroup_size(64)
+        @compute @workgroup_size(64)
         fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
             var G = 6.67408313131E-11;
 

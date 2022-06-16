@@ -83,7 +83,7 @@ class View
         context.configure({
             device,
             format: presentationFormat,
-            compositingAlphaMode: 'premultiplied',
+            alphaMode: 'premultiplied',
             //compositingAlphaMode: 'opaque',
             size: presentationSize,
         });
