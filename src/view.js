@@ -78,14 +78,17 @@ class View
             canvasRef.clientWidth * devicePixelRatio,
             canvasRef.clientHeight * devicePixelRatio,
         ];
+
+        canvasRef.width = presentationSize[0];
+        canvasRef.height = presentationSize[1];
+
         const presentationFormat = this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
 
         context.configure({
             device,
             format: presentationFormat,
-            alphaMode: 'premultiplied',
+            alphaMode: 'premultiplied'
             //compositingAlphaMode: 'opaque',
-            size: presentationSize,
         });
     }
 

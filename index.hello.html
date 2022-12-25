@@ -62,17 +62,14 @@
             const context = canvasRef.getContext('webgpu');
 
             const devicePixelRatio = window.devicePixelRatio || 1;
-            const presentationSize = [
-                canvasRef.clientWidth * devicePixelRatio,
-                canvasRef.clientHeight * devicePixelRatio,
-            ];
+            canvasRef.width = canvasRef.clientWidth * devicePixelRatio;
+            canvasRef.height = canvasRef.clientHeight * devicePixelRatio;
             const presentationFormat = navigator.gpu.getPreferredCanvasFormat(adapter);
 
             context.configure({
                 device,
                 format: presentationFormat,
-                alphaMode: 'premultiplied',
-                size: presentationSize,
+                alphaMode: 'premultiplied'
             });
 
             const pipeline = device.createRenderPipeline({

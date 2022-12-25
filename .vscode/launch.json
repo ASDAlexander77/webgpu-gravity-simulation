@@ -8,10 +8,11 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "file:///${workspaceFolder}/index.html",
+            "url": "file:///${file}",
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
+                "--enable-unsafe-webgpu"
             ]
         },
         {
@@ -22,6 +23,7 @@
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
             "runtimeArgs": [
+                "--enable-unsafe-webgpu"
             ]
         },
         {
@@ -32,6 +34,7 @@
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
             "runtimeArgs": [
+                "--enable-unsafe-webgpu"
             ]
         },
         {
@@ -42,6 +45,7 @@
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
             "runtimeArgs": [
+                "--enable-unsafe-webgpu"
             ]
         },        
         {
@@ -52,6 +56,7 @@
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
             "runtimeArgs": [
+                "--enable-unsafe-webgpu"
             ]
         }        
     ]
