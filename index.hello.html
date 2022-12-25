@@ -31,7 +31,7 @@
 
 <body>
     <textarea id="vert_code">
-        @stage(vertex)
+        @vertex
         fn main(@builtin(vertex_index) VertexIndex : u32)
              -> @builtin(position) vec4<f32> {
           var pos = array<vec2<f32>, 3>(
@@ -43,7 +43,7 @@
         }
     </textarea>
     <textarea id="frag_code">
-        @stage(fragment)
+        @fragment
         fn main() -> @location(0) vec4<f32> {
           return vec4<f32>(1.0, 0.0, 0.0, 1.0);
         }
@@ -66,12 +66,12 @@
                 canvasRef.clientWidth * devicePixelRatio,
                 canvasRef.clientHeight * devicePixelRatio,
             ];
-            const presentationFormat = context.getPreferredCanvasFormat(adapter);
+            const presentationFormat = navigator.gpu.getPreferredCanvasFormat(adapter);
 
             context.configure({
                 device,
                 format: presentationFormat,
-                compositingAlphaMode: 'premultiplied',
+                alphaMode: 'premultiplied',
                 size: presentationSize,
             });
 
@@ -96,6 +96,7 @@
                 primitive: {
                     topology: 'triangle-list',
                 },
+                layout: 'auto'
             });
 
             function frame() {

@@ -93,7 +93,9 @@
 
             var first = instancesIn.instances[threadIndex];
 
-            instancesOut.instances[threadIndex] = first + vec3(1.0, 1.0, 1.0);
+            first.position = first.position + vec3(1.0, 1.0, 1.0);
+
+            instancesOut.instances[threadIndex] = first;
         }
     </textarea>
     <canvas id="renderCanvas"></canvas>
