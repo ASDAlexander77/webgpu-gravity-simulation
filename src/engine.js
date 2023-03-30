@@ -227,7 +227,7 @@ class Engine {
 
                 // draw
                 {
-                    //this.#validati4onStart();
+                    //this.#validationStart();
 
                     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
 

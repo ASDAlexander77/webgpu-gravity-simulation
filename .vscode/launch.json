@@ -7,10 +7,10 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
+            "name": "Current File: WEBGPU Chrome",
             "url": "file:///${file}",
             "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+            "runtimeExecutable": "${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
                 "--enable-unsafe-webgpu"
             ]
@@ -18,10 +18,10 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "WEBGPU Launch Chrome against localhost",
+            "name": "N-Body gravity: WEBGPU Chrome",
             "url": "file:///${workspaceFolder}/index.html",
             "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
+            "runtimeExecutable": "${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
                 "--enable-unsafe-webgpu"
             ]
@@ -29,32 +29,22 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "life WEBGPU Launch Chrome against localhost",
+            "name": "Life: WEBGPU Chrome",
             "url": "file:///${workspaceFolder}/index.life.html",
             "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
+            "runtimeExecutable": "${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
                 "--enable-unsafe-webgpu"
             ]
         },
+    
         {
             "type": "chrome",
             "request": "launch",
-            "name": "SC2 WEBGPU Launch Chrome against localhost",
-            "url": "file:///${workspaceFolder}/index.sc2sim.html",
-            "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
-            "runtimeArgs": [
-                "--enable-unsafe-webgpu"
-            ]
-        },        
-        {
-            "type": "chrome",
-            "request": "launch",
-            "name": "Hello - WEBGPU Launch Chrome against localhost",
+            "name": "Hello: WEBGPU Chrome",
             "url": "file:///${workspaceFolder}/index.hello.html",
             "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "C:\\Users\\Alexander\\AppData\\Local\\Google\\Chrome SxS\\Application\\chrome.exe",
+            "runtimeExecutable": "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
                 "--enable-unsafe-webgpu"
             ]

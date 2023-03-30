@@ -1,1 +1,1 @@
-"C:\Users\Alexander\AppData\Local\Google\Chrome SxS\Application\chrome.exe" "http://austin-eng.com/webgpu-samples/samples/rotatingCube"
+"%ProgramFiles%\Google\Chrome\Application\chrome.exe" --enable-unsafe-webgpu "http://austin-eng.com/webgpu-samples/samples/rotatingCube"
