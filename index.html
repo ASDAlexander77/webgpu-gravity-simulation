@@ -91,41 +91,6 @@
           return vec4<f32>(texColor.r, texColor.g, texColor.b, 1.0);
         }        
     </textarea>
-    <textarea id="calc_wgsl_">
-        struct MassSize {
-            mass: f32,
-            size: f32,
-        };
-
-        struct Instance {
-            @size(16) force: vec3<f32>, 
-            @size(16) position : vec3<f32>,
-            @size(16) velocity : vec3<f32>,
-            @size(16) mass_size: MassSize,
-        };
-
-        struct Instances {
-            instances : array<Instance>,
-        };
-
-        @binding(0) @group(0) var<storage, read> instancesIn : Instances;
-        @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
-
-        @compute @workgroup_size(64)
-        fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
-            var index : u32 = GlobalInvocationID.x;
-            
-            var time = params.time;           
-            var count : u32 = arrayLength(&instancesIn.instances);
-            
-            // Read
-            var vPos = instancesIn.instances[index].position;
-            var vVel = instancesIn.instances[index].velocity;
-
-            // Write back
-            instancesOut.instances[index].position = vPos + vec3<f32>(0.001, 0.001, 0.0);
-        }   
-    </textarea>
     <textarea id="calc_wgsl">
         struct SimParams {
             time: f32,
