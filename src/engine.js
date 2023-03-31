@@ -4,7 +4,6 @@ const ANTI_ALIAS = true;
 
 class Engine {
     constructor() {
-        this.meshes = [];
         this.tick = 0;
     }
 
