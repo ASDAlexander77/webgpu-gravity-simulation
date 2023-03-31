@@ -1,5 +1,6 @@
 # WebGPU Gravity Simulation (Compute)
-###### Powered by [![WebGPU|300x300](https://user-images.githubusercontent.com/454184/116650388-d2cdde00-a935-11eb-8553-eb73eed2016b.png)](https://www.w3.org/TR/webgpu/)
+###### Powered by <br/><a href="https://www.w3.org/TR/webgpu/" title="WebGPU"><img src="https://user-images.githubusercontent.com/454184/116650388-d2cdde00-a935-11eb-8553-eb73eed2016b.png" width="300" height="300" /></a>
+
 
 # Example
 
