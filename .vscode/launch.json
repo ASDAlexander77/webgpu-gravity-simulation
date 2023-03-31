@@ -44,7 +44,7 @@
             "name": "Hello: WEBGPU Chrome",
             "url": "file:///${workspaceFolder}/index.hello.html",
             "webRoot": "${workspaceFolder}",
-            "runtimeExecutable": "%ProgramFiles%\\Google\\Chrome\\Application\\chrome.exe",
+            "runtimeExecutable": "${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
                 "--enable-unsafe-webgpu"
             ]

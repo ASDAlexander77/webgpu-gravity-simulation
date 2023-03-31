@@ -106,20 +106,21 @@
                 layout: 'auto'
             });
 
+            const renderPassDescriptor = {
+                colorAttachments: [
+                    {
+                        view: null,
+                        clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+                        loadOp: 'clear',
+                        storeOp: 'store',
+                    },
+                ],
+            };
+
             function frame() {
                 const commandEncoder = device.createCommandEncoder();
-                const textureView = context.getCurrentTexture().createView();
 
-                const renderPassDescriptor = {
-                    colorAttachments: [
-                        {
-                            view: textureView,
-                            clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
-                            loadOp: 'clear',
-                            storeOp: 'store',
-                        },
-                    ],
-                };
+                renderPassDescriptor.colorAttachments[0].view = context.getCurrentTexture().createView();
 
                 const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
                 passEncoder.setPipeline(pipeline);
