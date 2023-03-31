@@ -69,7 +69,7 @@ class Mesh {
 
                 const pipeline = this.getRenderPipeline(view);
 
-                passEncoder.setPipeline(pipeline);
+                passEncoder.setPipeline(pipeline);  
 
                 if (drawBuffer) {
                     passEncoder.setVertexBuffer(0, drawBuffer);
