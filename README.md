@@ -146,5 +146,6 @@ Run
 Result
 ```
 [![Example](/example.gif)]
+[![Example](https://github.com/ASDAlexander77/webgpu-gravity-simulation/blob/main/example.gif)](https://github.com/ASDAlexander77/webgpu-gravity-simulation)
 ```
 
