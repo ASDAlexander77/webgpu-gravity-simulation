@@ -224,8 +224,6 @@ class Engine {
     }
 
     #compute(mesh, copy) {
-        const device = this.device;
-
         mesh.Swap();
 
         const commandEncoders = [];
@@ -234,7 +232,7 @@ class Engine {
             commandEncoders.push( mesh.GetCopyDataToCloneCmd());
         }
 
-        device.queue.submit(commandEncoders);
+        this.device.queue.submit(commandEncoders);
 
         return true;
     }    
