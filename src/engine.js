@@ -199,10 +199,10 @@ class Engine {
     }
 
     async #drawLogic() {
-        const device = this.device;
 
         const commandEncoders = [];
 
+        // we need odd and even steps
         for (const mesh of this.scene.meshes) {
             mesh.Swap();
 
@@ -212,7 +212,7 @@ class Engine {
             }
         }
 
-        device.queue.submit(commandEncoders);
+        this.device.queue.submit(commandEncoders);
 
         if (DEBUG) {
             for (const mesh of this.scene.meshes) {
