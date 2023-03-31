@@ -17,7 +17,7 @@ class View
     }
 
     get View() {
-        return this.context.getCurrentTexture().createView();
+        return this.view || (this.view = this.context.getCurrentTexture().createView());
     }
 
     get DepthTexture()
