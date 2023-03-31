@@ -201,70 +201,17 @@ class Engine {
     async #drawLogic() {
         const device = this.device;
 
-        const renderPassDescriptor = this.view.RenderPassDescriptor;
-
         const commandEncoders = [];
-        const commandEncoder = device.createCommandEncoder();
 
         for (const mesh of this.scene.meshes) {
-
             mesh.Swap();
 
-            if (mesh.computeShaderModule)
-            {
-                // calc
-                const passEncoder = commandEncoder.beginComputePass();
-                passEncoder.setPipeline(mesh.ComputePipeline);
-                passEncoder.setBindGroup(0, mesh.CurrentBindGroup());
-                passEncoder.setBindGroup(1, mesh.ParamsBindGroup);
-                passEncoder.dispatchWorkgroups(Math.ceil(mesh.instanceCount / 64));
-                passEncoder.end();
-            }
-
-            if (mesh.shaderModule)
-            {
-                const drawBuffer = mesh.CurrentInstancesData();
-
-                // draw
-                {
-                    //this.#validationStart();
-
-                    const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-
-                    const pipeline = mesh.getRenderPipeline(this.view);
-
-                    passEncoder.setPipeline(pipeline);
-
-                    if (drawBuffer) {
-                        passEncoder.setVertexBuffer(0, drawBuffer);
-                    }
-
-                    if (mesh.VertexBuffer) {
-                        passEncoder.setVertexBuffer(1, mesh.VertexBuffer);
-                    }
-
-                    if (mesh.HasTexture) {
-                        passEncoder.setBindGroup(0, mesh.TextureBindGroup);
-                    }
-
-                    passEncoder.setBindGroup(1, this.paramsData.getBindGroupFor(pipeline.getBindGroupLayout(1)));
-
-                    const firstVertex = 0;
-                    const firstInstance = 0;
-                    passEncoder.draw(mesh.vertexCount, mesh.instanceCount, firstVertex, firstInstance);
-                    passEncoder.end();
-
-                    //this.#errorStop();
-                }
-            }
-
+            commandEncoders.push(mesh.GetComputeAndDrawCmd(this.view, this.paramsData));
             if (DEBUG) {
-                const copyCmdDbg = mesh.GetCopyDataToCloneCmd();
-                commandEncoders.push(copyCmdDbg.finish());
+                commandEncoders.push(mesh.GetCopyDataToCloneCmd());
             }
         }
 
-        commandEncoders.unshift(commandEncoder.finish());
         device.queue.submit(commandEncoders);
 
         if (DEBUG) {
@@ -282,25 +229,11 @@ class Engine {
         mesh.Swap();
 
         const commandEncoders = [];
-        const commandEncoder = device.createCommandEncoder();
-
-        if (mesh.computeShaderModule)
-        {
-            // calc
-            const passEncoder = commandEncoder.beginComputePass();
-            passEncoder.setPipeline(mesh.ComputePipeline);
-            passEncoder.setBindGroup(0, mesh.CurrentBindGroup());
-            passEncoder.setBindGroup(1, mesh.ParamsBindGroup);
-            passEncoder.dispatchWorkgroups(Math.ceil(mesh.instanceCount / 64));
-            passEncoder.end();
-
-            if (copy) {
-                const copyCmdDbg = mesh.GetCopyDataToCloneCmd();
-                commandEncoders.push(copyCmdDbg.finish());
-            }
+        commandEncoders.push(mesh.GetComputeAndDrawCmd(this.view, this.paramsData));
+        if (copy) {
+            commandEncoders.push( mesh.GetCopyDataToCloneCmd());
         }
 
-        commandEncoders.unshift(commandEncoder.finish());
         device.queue.submit(commandEncoders);
 
         return true;

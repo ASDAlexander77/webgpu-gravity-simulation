@@ -49,6 +49,54 @@ class Mesh {
         return this.textureBindGroup || (this.textureBindGroup = this.#createTextureBindGroup());
     }
 
+    GetComputeAndDrawCmd(view, paramsData)
+    {
+        const commandEncoder = this.engine.device.createCommandEncoder();
+        this.getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData);
+        return commandEncoder.finish();
+    }
+
+    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData)
+    {
+        if (this.shaderModule)
+        {
+            const drawBuffer = this.CurrentInstancesData();
+
+            // draw
+            {
+                //this.#validationStart();
+                const passEncoder = commandEncoder.beginRenderPass(view.RenderPassDescriptor);
+
+                const pipeline = this.getRenderPipeline(view);
+
+                passEncoder.setPipeline(pipeline);
+
+                if (drawBuffer) {
+                    passEncoder.setVertexBuffer(0, drawBuffer);
+                }
+
+                if (this.VertexBuffer) {
+                    passEncoder.setVertexBuffer(1, this.VertexBuffer);
+                }
+
+                if (this.HasTexture) {
+                    passEncoder.setBindGroup(0, this.TextureBindGroup);
+                }
+
+                passEncoder.setBindGroup(1, paramsData.getBindGroupFor(pipeline.getBindGroupLayout(1)));
+
+                const firstVertex = 0;
+                const firstInstance = 0;
+                passEncoder.draw(this.vertexCount, this.instanceCount, firstVertex, firstInstance);
+                passEncoder.end();
+
+                //this.#errorStop();
+            }
+        }
+
+        return commandEncoder;
+    }
+
     GetCopyDataToCloneCmd()
     {
         const drawBuffer = this.CurrentInstancesData();
@@ -62,7 +110,7 @@ class Mesh {
             0,
             this.instancesData.data.byteLength);
 
-        return copyBufferCmd;
+        return copyBufferCmd.finish();
     }
 
     async addImage(imgId) {
@@ -286,6 +334,22 @@ class ComputedMesh extends Mesh {
             ? this.InstancesDataBindGroup
             : this.InstancesSwapDataBindGroup;
     }
+
+    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData)
+    {
+        if (this.computeShaderModule)
+        {
+            // calc
+            const passEncoder = commandEncoder.beginComputePass();
+            passEncoder.setPipeline(this.ComputePipeline);
+            passEncoder.setBindGroup(0, this.CurrentBindGroup());
+            passEncoder.setBindGroup(1, this.ParamsBindGroup);
+            passEncoder.dispatchWorkgroups(Math.ceil(this.instanceCount / 64));
+            passEncoder.end();
+        }
+
+        super.getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData);
+    }    
 
     #createComputePipeline() {
         const computePipelineDescr = {

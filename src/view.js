@@ -10,10 +10,13 @@ class View
         if (this.renderPassDescriptor)
         {
             this.updateRenderPassDescriptor();
-            return this.renderPassDescriptor;
+        }
+        else
+        {
+            this.renderPassDescriptor = this.createRenderPassDescriptor();
         }
 
-        return this.renderPassDescriptor = this.createRenderPassDescriptor();
+        return this.renderPassDescriptor;
     }
 
     get View() {
