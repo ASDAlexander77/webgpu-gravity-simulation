@@ -1,5 +1,6 @@
 const DEBUG = false;
 const DEBUG_DRAW_DELAYED = false;
+const ANTI_ALIAS = true;
 
 class Engine {
     constructor() {
@@ -43,8 +44,9 @@ class Engine {
         const device = this.device;
         const context = this.context;
 
-        //this.view = new View(canvasRef, adapter, device, context);
-        this.view = new MSAAView(canvasRef, adapter, device, context);
+        this.view = ANTI_ALIAS
+            ? new MSAAView(canvasRef, adapter, device, context)
+            : new View(canvasRef, adapter, device, context);
         this.view.EnableDepth = true;
 
         device.onuncapturederror = (event) => {
