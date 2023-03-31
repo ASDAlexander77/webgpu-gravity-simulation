@@ -55,5 +55,5 @@ class DataMesh extends ComputedMesh {
             engine,
             paramsInitData,
         );
-   }
+    }
 }

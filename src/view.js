@@ -1,5 +1,4 @@
-class View
-{
+class View {
     constructor(canvasRef, adapter, device, context) {
         this.device = device;
         this.context = context;
@@ -7,12 +6,10 @@ class View
     }
 
     get RenderPassDescriptor() {
-        if (this.renderPassDescriptor)
-        {
+        if (this.renderPassDescriptor) {
             this.updateRenderPassDescriptor();
         }
-        else
-        {
+        else {
             this.renderPassDescriptor = this.createRenderPassDescriptor();
         }
 
@@ -23,8 +20,7 @@ class View
         return this.view || (this.view = this.context.getCurrentTexture().createView());
     }
 
-    get DepthTexture()
-    {
+    get DepthTexture() {
         return this.depthTexture || (this.depthTexture = this.#createDepthTexture());
     }
 
@@ -48,21 +44,18 @@ class View
             ],
         };
 
-        if (this.enableDepth)
-        {
+        if (this.enableDepth) {
             renderPassDescriptor.depthStencilAttachment = this.#getDepthStencilAttachment();
         }
 
         return renderPassDescriptor;
     }
 
-    updateRenderPassDescriptor()
-    {
+    updateRenderPassDescriptor() {
         this.renderPassDescriptor.colorAttachments[0].view = this.View;
     }
 
-    getDepthTextureDescriptor()
-    {
+    getDepthTextureDescriptor() {
         const depthTextureDescriptor = {
             size: this.presentationSize,
             format: 'depth24plus',
@@ -95,8 +88,7 @@ class View
         });
     }
 
-    #getDepthStencilAttachment()
-    {
+    #getDepthStencilAttachment() {
         const depthStencilAttachment = {
             view: this.DepthTexture.createView(),
             depthClearValue: 1.0,
@@ -107,14 +99,12 @@ class View
         return depthStencilAttachment;
     }
 
-    #createDepthTexture()
-    {
+    #createDepthTexture() {
         return this.device.createTexture(this.getDepthTextureDescriptor());
     }
 }
 
-class MSAAView extends View
-{
+class MSAAView extends View {
     constructor(canvasRef, adapter, device, context) {
         super(canvasRef, adapter, device, context);
     }
@@ -140,20 +130,17 @@ class MSAAView extends View
         return renderPassDescriptorMSAA;
     }
 
-    updateRenderPassDescriptor()
-    {
+    updateRenderPassDescriptor() {
         this.renderPassDescriptor.colorAttachments[0].resolveTarget = this.ResolveTarget;
-    }    
+    }
 
-    getDepthTextureDescriptor()
-    {
+    getDepthTextureDescriptor() {
         const depthTextureDescriptor = super.getDepthTextureDescriptor();
         depthTextureDescriptor.sampleCount = MSAAView.MSAA;
         return depthTextureDescriptor;
     }
 
-    #createViewTexture()
-    {
+    #createViewTexture() {
         const texture = this.device.createTexture({
             size: this.presentationSize,
             sampleCount: MSAAView.MSAA,

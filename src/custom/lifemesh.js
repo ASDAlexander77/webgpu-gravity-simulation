@@ -21,10 +21,9 @@ class LifeMesh extends ComputedMesh {
                 instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
                 // size, align, align, align
-                let size = step;            
+                let size = step;
 
-                if (Math.random() < 0.5)
-                {
+                if (Math.random() < 0.5) {
                     size = 0;
                 }
 

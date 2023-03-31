@@ -26,8 +26,7 @@ class Mesh {
         return this.instancesSwapData.Buffer;
     }
 
-    Swap()
-    {
+    Swap() {
         this.tick++;
     }
 
@@ -49,17 +48,14 @@ class Mesh {
         return this.textureBindGroup || (this.textureBindGroup = this.#createTextureBindGroup());
     }
 
-    GetComputeAndDrawCmd(view, paramsData)
-    {
+    GetComputeAndDrawCmd(view, paramsData) {
         const commandEncoder = this.engine.device.createCommandEncoder();
         this.getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData);
         return commandEncoder.finish();
     }
 
-    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData)
-    {
-        if (this.shaderModule)
-        {
+    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData) {
+        if (this.shaderModule) {
             const drawBuffer = this.CurrentInstancesData();
 
             // draw
@@ -69,7 +65,7 @@ class Mesh {
 
                 const pipeline = this.getRenderPipeline(view);
 
-                passEncoder.setPipeline(pipeline);  
+                passEncoder.setPipeline(pipeline);
 
                 if (drawBuffer) {
                     passEncoder.setVertexBuffer(0, drawBuffer);
@@ -97,8 +93,7 @@ class Mesh {
         return commandEncoder;
     }
 
-    GetCopyDataToCloneCmd()
-    {
+    GetCopyDataToCloneCmd() {
         const drawBuffer = this.CurrentInstancesData();
 
         const copyBufferCmd = this.engine.device.createCommandEncoder();
@@ -335,10 +330,8 @@ class ComputedMesh extends Mesh {
             : this.InstancesSwapDataBindGroup;
     }
 
-    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData)
-    {
-        if (this.computeShaderModule)
-        {
+    getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData) {
+        if (this.computeShaderModule) {
             // calc
             const passEncoder = commandEncoder.beginComputePass();
             passEncoder.setPipeline(this.ComputePipeline);
@@ -349,7 +342,7 @@ class ComputedMesh extends Mesh {
         }
 
         super.getPassesForComputeAndDrawCmd(commandEncoder, view, paramsData);
-    }    
+    }
 
     #createComputePipeline() {
         const computePipelineDescr = {

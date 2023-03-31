@@ -1,5 +1,5 @@
-//const DEBUG = true;
 const DEBUG = false;
+const DEBUG_DRAW_DELAYED = false;
 
 class Engine {
     constructor() {
@@ -63,20 +63,19 @@ class Engine {
         this.paramsData = new UniformData(
             this,
             this.#getViewMatrix(),
-        );        
+        );
     }
 
     #getViewMatrix() {
         const view = mat4.create();
         mat4.scale(view, view, vec3.fromValues(this.scale, this.scale, 1));
 
-        if (this.view.EnableDepth)
-        {
+        if (this.view.EnableDepth) {
             mat4.scale(view, view, vec3.fromValues(2.5, 2.5, 1));
             mat4.translate(view, view, vec3.fromValues(0, 0, -4));
 
-            mat4.rotateX(view, view, this.xangle);            
-            mat4.rotateY(view, view, this.yangle);            
+            mat4.rotateX(view, view, this.xangle);
+            mat4.rotateY(view, view, this.yangle);
 
             const projectionMatrix = mat4.create();
             const aspect = 1;
@@ -97,9 +96,8 @@ class Engine {
         async function frame() {
             const r = await self.#drawLogic();
             if (r) {
-                if (DEBUG) {
-                    requestAnimationFrame(frame);
-                    //setTimeout(frame, 100);
+                if (DEBUG_DRAW_DELAYED) {
+                    setTimeout(frame, 100);
                 }
                 else {
                     requestAnimationFrame(frame);
@@ -142,8 +140,7 @@ class Engine {
                 continue;
 
             vis_cnt++;
-            if (vis_cnt > cut_vis_cnt)
-            {
+            if (vis_cnt > cut_vis_cnt) {
                 break;
             }
 
@@ -164,13 +161,12 @@ class Engine {
         //console.log(data);        
     }
 
-    #attachToEvents()
-    {
+    #attachToEvents() {
         this.canvasRef.onwheel = (evt) => {
             evt.preventDefault();
 
             this.scale += evt.deltaY * -0.0001;
-            
+
             this.paramsData.Update(this.#getViewMatrix());
         }
 
@@ -184,18 +180,17 @@ class Engine {
 
         this.canvasRef.onmousemove = (evt) => {
 
-            if (!this.mousePressed || evt.movementX == 0 && evt.movementY == 0)
-            {
+            if (!this.mousePressed || evt.movementX == 0 && evt.movementY == 0) {
                 return;
             }
 
             evt.preventDefault();
 
-            this.xangle += evt.movementY * 0.001;            
-            this.yangle += evt.movementX * 0.001;            
-            
+            this.xangle += evt.movementY * 0.001;
+            this.yangle += evt.movementX * 0.001;
+
             this.paramsData.Update(this.#getViewMatrix());
-        }        
+        }
     }
 
     async #drawLogic() {
@@ -229,11 +224,11 @@ class Engine {
         const commandEncoders = [];
         commandEncoders.push(mesh.GetComputeAndDrawCmd(this.view, this.paramsData));
         if (copy) {
-            commandEncoders.push( mesh.GetCopyDataToCloneCmd());
+            commandEncoders.push(mesh.GetCopyDataToCloneCmd());
         }
 
         this.device.queue.submit(commandEncoders);
 
         return true;
-    }    
+    }
 }

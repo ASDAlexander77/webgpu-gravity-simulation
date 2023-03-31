@@ -76,8 +76,7 @@ class UniformData extends Data {
 
     getBindGroupFor(bindGroupLayout) {
 
-        if (this.bindGroupLayout == bindGroupLayout)
-        {
+        if (this.bindGroupLayout == bindGroupLayout) {
             return this.uniformBindGroup;
         }
 

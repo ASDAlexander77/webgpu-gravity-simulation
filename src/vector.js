@@ -747,37 +747,37 @@ class vec3 {
    * Alias for {@link vec3.multiply}
    * @function
    */
-   static mul = vec3.multiply;
+  static mul = vec3.multiply;
 
   /**
    * Alias for {@link vec3.divide}
    * @function
    */
-   static div = vec3.divide;
+  static div = vec3.divide;
 
   /**
    * Alias for {@link vec3.distance}
    * @function
    */
-   static dist = vec3.distance;
+  static dist = vec3.distance;
 
   /**
    * Alias for {@link vec3.squaredDistance}
    * @function
    */
-   static sqrDist = vec3.squaredDistance;
+  static sqrDist = vec3.squaredDistance;
 
   /**
    * Alias for {@link vec3.length}
    * @function
    */
-   static len = vec3.length;
+  static len = vec3.length;
 
   /**
    * Alias for {@link vec3.squaredLength}
    * @function
    */
-   static sqrLen = vec3.squaredLength;
+  static sqrLen = vec3.squaredLength;
 
   /**
    * Perform some operation over an array of vec3s.
@@ -791,7 +791,7 @@ class vec3 {
    * @returns {Array} a
    * @function
    */
-   static forEach = (function () {
+  static forEach = (function () {
     let vec = vec3.create();
 
     return function (a, stride, offset, count, fn, arg) {
@@ -825,8 +825,7 @@ class vec3 {
   })();
 }
 
-class vec4
-{
+class vec4 {
   static fromValues(x, y, z, w) {
     let out = new glMatrix.ARRAY_TYPE(4);
     out[0] = x;
@@ -838,9 +837,9 @@ class vec4
 
   static multiplyByMatrix(out, a, b) {
     const b0 = b[0],
-          b1 = b[1],
-          b2 = b[2],
-          b3 = b[3];
+      b1 = b[1],
+      b2 = b[2],
+      b3 = b[3];
 
     out[0] = a[0] * b0 + a[1] * b1 + a[2] * b2 + a[3] * b3;
     out[1] = a[4] * b0 + a[5] * b1 + a[6] * b2 + a[7] * b3;
