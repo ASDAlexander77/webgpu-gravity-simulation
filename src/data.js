@@ -54,11 +54,11 @@ class Data {
             const len = newValues.reduce((totalLen, a) => totalLen += a.length, 0);
             const data = new Float32Array(len);
             let offset = 0;
-            for (const a of data) {
-                this.data.set(a, offset);
+            for (const a of newValues) {
+                data.set(a, offset);
                 offset += a.length;
             }
-            
+
             newData = data;
         }        
 

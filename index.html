@@ -81,7 +81,9 @@
             @location(5) a_vert_uv : vec2<f32>) -> VertexOutput {
 
           var output : VertexOutput;
-          output.Position = viewParams.modelViewProjectionMatrix * vec4<f32>((a_position + a_vert_pos * a_mass_size.y), 1.0);
+          let worldPos = viewParams.modelViewProjectionMatrix * vec4<f32>(a_position, 1.0);
+          let vertPos = vec4<f32>(a_vert_pos * a_mass_size.y * 10.0f / worldPos.z, 1.0);
+          output.Position = worldPos + vertPos;
           output.fragUV = a_vert_uv;
           return output;
         }
