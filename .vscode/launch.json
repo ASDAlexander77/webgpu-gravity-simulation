@@ -12,7 +12,6 @@
             "webRoot": "${workspaceFolder}",
             "runtimeExecutable": "${env:ProgramFiles}\\Google\\Chrome\\Application\\chrome.exe",
             "runtimeArgs": [
-                "--enable-unsafe-webgpu"
             ]
         },
         {

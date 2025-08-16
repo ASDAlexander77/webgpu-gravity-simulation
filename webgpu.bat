@@ -1,1 +1,1 @@
-"%ProgramFiles%\Google\Chrome\Application\chrome.exe" --enable-unsafe-webgpu "file:///%~dp0/index.hello.html"
+"%ProgramFiles%\Google\Chrome\Application\chrome.exe" --enable-unsafe-webgpu "file:///%~dp0/index.html"

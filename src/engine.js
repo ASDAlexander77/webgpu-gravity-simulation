@@ -85,7 +85,7 @@ class Engine {
             let viewProj = mat4.create();
             mat4.multiply(viewProj, projectionMatrix, view);
 
-            return viewProj;
+            return [viewProj, projectionMatrix];
         }
 
         return view;

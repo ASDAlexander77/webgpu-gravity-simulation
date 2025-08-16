@@ -10,8 +10,19 @@ function getTypeSize(type) {
 class Data {
     constructor(engine, data) {
         this.engine = engine;
-        this.data = new Float32Array(data.length)
-        this.data.set(data);
+        if (["array", "object"].indexOf(typeof data[0]) >= 0) {
+            const len = data.reduce((totalLen, a) => totalLen += a.length, 0);
+            this.data = new Float32Array(len);
+            let offset = 0;
+            for (const a of data) {
+                this.data.set(a, offset);
+                offset += a.length;
+            }
+
+        } else {
+            this.data = new Float32Array(data.length);
+            this.data.set(data);
+        }
     }
 
     get Data() {
@@ -37,11 +48,24 @@ class Data {
     }
 
     Update(newValues) {
+
+        let newData = newValues;
+        if (["array", "object"].indexOf(typeof newValues[0]) >= 0) {
+            const len = newValues.reduce((totalLen, a) => totalLen += a.length, 0);
+            const data = new Float32Array(len);
+            let offset = 0;
+            for (const a of data) {
+                this.data.set(a, offset);
+                offset += a.length;
+            }
+            
+            newData = data;
+        }        
+
         this.engine.device.queue.writeBuffer(
             this.Buffer,
             0,
-            new Float32Array(newValues)
-        );
+            new Float32Array(newData));
     }
 
     createResourceInfo() {
