@@ -84,6 +84,7 @@ class View {
             device,
             format: presentationFormat,
             alphaMode: 'premultiplied'
+            //alphaMode: 'opaque',            
             //compositingAlphaMode: 'opaque',
         });
     }

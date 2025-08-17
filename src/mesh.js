@@ -138,7 +138,7 @@ class Mesh {
             vertex: this.#getVertexDescr(),
             fragment: this.#getFragmentDescr(view),
             primitive: this.#getPrimitiveDescr(),
-            layout: 'auto'
+            layout: 'auto'            
         };
 
         if (view.MultiSample) {
@@ -179,6 +179,18 @@ class Mesh {
             targets: [
                 {
                     format: view.presentationFormat,
+                    blend: {
+                        color: {
+                            operation: 'add',
+                            srcFactor: 'one',
+                            dstFactor: 'one-minus-src-alpha',
+                        },
+                        alpha: {
+                            operation: 'add',
+                            srcFactor: 'one',
+                            dstFactor: 'one-minus-src-alpha',
+                        },
+                    },                    
                 },
             ],
         };
