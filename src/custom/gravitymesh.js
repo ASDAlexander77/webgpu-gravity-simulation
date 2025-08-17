@@ -21,8 +21,8 @@ class GravityMesh extends ComputedMesh {
             // position
             instancesInitData.push(diam * Math.random() - radius);
             instancesInitData.push(diam * Math.random() - radius);
-            instancesInitData.push(z);
-            //instancesInitData.push(radius * Math.random());
+            //instancesInitData.push(z);
+            instancesInitData.push(diam * Math.random());
             instancesInitData.push(0); // align, FYI: without align compute shader will not point to correct offset
 
             // velocity

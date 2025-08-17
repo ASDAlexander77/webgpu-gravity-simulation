@@ -72,20 +72,23 @@ class Engine {
         mat4.scale(view, view, vec3.fromValues(this.scale, this.scale, 1));
 
         if (this.view.EnableDepth) {
-            mat4.scale(view, view, vec3.fromValues(2.5, 2.5, 1));
-            mat4.translate(view, view, vec3.fromValues(0, 0, -4));
-
-            mat4.rotateX(view, view, this.xangle);
-            mat4.rotateY(view, view, this.yangle);
-
             const projectionMatrix = mat4.create();
             const aspect = 1;
             mat4.perspective(projectionMatrix, (2 * Math.PI) / 5, aspect, 1, 100.0);
 
+            mat4.scale(view, view, vec3.fromValues(2.5, 2.5, 1));
+            mat4.translate(view, view, vec3.fromValues(0, 0, -4));
+
+            let viewNoRotateProj = mat4.create();
+            mat4.multiply(viewNoRotateProj, projectionMatrix, view);
+
+            mat4.rotateX(view, view, this.xangle);
+            mat4.rotateY(view, view, this.yangle);
+
             let viewProj = mat4.create();
             mat4.multiply(viewProj, projectionMatrix, view);
 
-            return [viewProj, projectionMatrix];
+            return [viewProj, viewNoRotateProj];
         }
 
         return view;
