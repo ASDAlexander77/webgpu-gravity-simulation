@@ -83,9 +83,8 @@ class View {
         context.configure({
             device,
             format: presentationFormat,
-            alphaMode: 'premultiplied'
-            //alphaMode: 'opaque',            
-            //compositingAlphaMode: 'opaque',
+            alphaMode: 'premultiplied',
+            //alphaMode: 'opaque',
         });
     }
 

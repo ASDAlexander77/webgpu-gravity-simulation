@@ -182,15 +182,15 @@ class Mesh {
                     blend: {
                         color: {
                             operation: 'add',
-                            srcFactor: 'one',
+                            srcFactor: 'src-alpha',
                             dstFactor: 'one-minus-src-alpha',
                         },
                         alpha: {
                             operation: 'add',
-                            srcFactor: 'one',
-                            dstFactor: 'one-minus-src-alpha',
-                        },
-                    },                    
+                            srcFactor: 'zero',
+                            dstFactor: 'one',
+                        }
+                    },
                 },
             ],
         };
