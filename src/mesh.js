@@ -181,15 +181,13 @@ class Mesh {
                     format: view.presentationFormat,
                     blend: {
                         color: {
-                            operation: 'add',
-                            srcFactor: 'src-alpha',
-                            dstFactor: 'one-minus-src-alpha',
+                            srcFactor: 'one',
+                            dstFactor: 'one-minus-src-alpha'
                         },
                         alpha: {
-                            operation: 'add',
-                            srcFactor: 'zero',
-                            dstFactor: 'one',
-                        }
+                            srcFactor: 'one',
+                            dstFactor: 'one-minus-src-alpha'
+                        },
                     },
                 },
             ],
@@ -295,7 +293,7 @@ class Mesh {
 
         this.engine.device.queue.copyExternalImageToTexture(
             { source: imageBitmap },
-            { texture: texture },
+            { texture: texture, premultipliedAlpha: true },
             [imageBitmap.width, imageBitmap.height]
         );
     }

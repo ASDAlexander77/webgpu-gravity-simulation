@@ -79,7 +79,6 @@
             context.configure({
                 device,
                 format: presentationFormat,
-                alphaMode: 'premultiplied'
             });
 
             const pipeline = device.createRenderPipeline({
