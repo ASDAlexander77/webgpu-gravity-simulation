@@ -187,8 +187,8 @@ class Mesh {
                         },
                         alpha: {
                             operation: 'add',
-                            srcFactor: 'zero',
-                            dstFactor: 'zero'
+                            srcFactor: 'src-alpha',
+                            dstFactor: 'one-minus-src-alpha'
                         },
                     },
                 },
