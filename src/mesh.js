@@ -181,12 +181,14 @@ class Mesh {
                     format: view.presentationFormat,
                     blend: {
                         color: {
-                            srcFactor: 'one',
-                            dstFactor: 'one-minus-src-alpha'
+                            operation: 'add',
+                            srcFactor: 'src-alpha',
+                            dstFactor: 'zero'
                         },
                         alpha: {
+                            operation: 'max',
                             srcFactor: 'one',
-                            dstFactor: 'one-minus-src-alpha'
+                            dstFactor: 'one'
                         },
                     },
                 },
