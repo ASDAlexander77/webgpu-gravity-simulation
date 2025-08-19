@@ -183,12 +183,12 @@ class Mesh {
                         color: {
                             operation: 'add',
                             srcFactor: 'src-alpha',
-                            dstFactor: 'zero'
+                            dstFactor: 'one-minus-src-alpha'
                         },
                         alpha: {
-                            operation: 'max',
-                            srcFactor: 'one',
-                            dstFactor: 'one'
+                            operation: 'add',
+                            srcFactor: 'zero',
+                            dstFactor: 'zero'
                         },
                     },
                 },

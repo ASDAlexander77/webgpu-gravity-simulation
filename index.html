@@ -98,7 +98,12 @@
         @fragment
         fn frag_main(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
           let texColor = textureSample(currentTexture, currentSampler, fragUV);
-          return texColor;
+          //return texColor;
+          if (texColor.a > 0.0) {
+            return vec4<f32>(texColor.r * texColor.a, texColor.g * texColor.a, texColor.b * texColor.a, texColor.a);
+          } else {
+            return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+          }
         }        
     </textarea>
     <textarea id="calc_wgsl">
