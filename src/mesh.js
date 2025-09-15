@@ -112,7 +112,7 @@ class Mesh {
         // load texture
         const img = document.getElementById(imgId);
         await img.decode();
-        const imageBitmap = await createImageBitmap(img);
+        const imageBitmap = await createImageBitmap(img, { premultiplyAlpha: 'premultiply' });
         this.#addImageAsTexture(imageBitmap);
     }
 
