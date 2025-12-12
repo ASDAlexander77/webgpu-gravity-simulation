@@ -148,7 +148,7 @@
             {
                 // no calculation required
 
-                // clone data, otherwise record in second buffer becomes dity (has stail values)
+                // clone data, otherwise record in second buffer becomes dirty (has stail values)
                 instancesOut.instances[threadIndex] = first;
                 return;
             }
@@ -186,16 +186,15 @@
 
             // calculate new position depends on force
             var a = forceVector / m1;
-            var v = a * time;
-            var s = v * time / 2.0;
+            var dV = a * time;
+            var dS = first.velocity * time;
 
-            var newPosition = first.position + (first.velocity * time) + s;
             var inst = instancesOut.instances[threadIndex];
             inst.force = forceVector;
             inst.mass_size = first.mass_size;
             inst.mass_size.mass = m1;                          
-            inst.position = newPosition;
-            inst.velocity = first.velocity + v;
+            inst.position = first.position + dS;
+            inst.velocity = first.velocity + dV;
             instancesOut.instances[threadIndex] = inst;
 
             // calculate collisions
