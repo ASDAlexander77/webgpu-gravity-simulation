@@ -190,11 +190,13 @@
             var s = v * time / 2.0;
 
             var newPosition = first.position + (first.velocity * time) + s;
-            instancesOut.instances[threadIndex].force = forceVector;
-            instancesOut.instances[threadIndex].mass_size = first.mass_size;
-            instancesOut.instances[threadIndex].mass_size.mass = m1;                          
-            instancesOut.instances[threadIndex].position = newPosition;
-            instancesOut.instances[threadIndex].velocity = first.velocity + v;
+            var inst = instancesOut.instances[threadIndex];
+            inst.force = forceVector;
+            inst.mass_size = first.mass_size;
+            inst.mass_size.mass = m1;                          
+            inst.position = newPosition;
+            inst.velocity = first.velocity + v;
+            instancesOut.instances[threadIndex] = inst;
 
             // calculate collisions
             for(var j : u32 = 0u; j < count; j=j+1u) 
@@ -231,19 +233,23 @@
                         var newR = pow((s1 * s1 * s1 + s2 * s2 * s2), 1.0 / 3.0);
 
                         // mark collision
-                        instancesOut.instances[threadIndex].velocity = vresult;  
-                        instancesOut.instances[threadIndex].mass_size.mass = m1 + m2;                          
-                        instancesOut.instances[threadIndex].mass_size.size = newR;
-                        instancesOut.instances[threadIndex].mass_size.debug1 = -1.0;
-                        instancesOut.instances[threadIndex].mass_size.debug2 = f32(j);
+                        var inst = instancesOut.instances[threadIndex];
+                        inst.velocity = vresult;  
+                        inst.mass_size.mass = m1 + m2;                          
+                        inst.mass_size.size = newR;
+                        inst.mass_size.debug1 = -1.0;
+                        inst.mass_size.debug2 = f32(j); 
+                        instancesOut.instances[threadIndex] = inst;
                     } else {
                         // collision from other side
-                        instancesOut.instances[threadIndex].mass_size.mass = 0.0;    
-                        instancesOut.instances[threadIndex].mass_size.size = 0.0;
-                        instancesOut.instances[threadIndex].velocity = vec3<f32>(0.0, 0.0, 0.0);
-                        instancesOut.instances[threadIndex].force = vec3<f32>(0.0, 0.0, 0.0);
-                        instancesOut.instances[threadIndex].mass_size.debug1 = -3.0;
-                        instancesOut.instances[threadIndex].mass_size.debug2 = f32(j);
+                        var inst = instancesOut.instances[threadIndex];
+                        inst.mass_size.mass = 0.0;    
+                        inst.mass_size.size = 0.0;
+                        inst.velocity = vec3<f32>(0.0, 0.0, 0.0);
+                        inst.force = vec3<f32>(0.0, 0.0, 0.0);
+                        inst.mass_size.debug1 = -3.0;
+                        inst.mass_size.debug2 = f32(j);
+                        instancesOut.instances[threadIndex] = inst;
                     }
 
                     // no more calculations after collision
