@@ -102,6 +102,10 @@
         @fragment
         fn frag_main(@location(0) fragUV: vec2<f32>, @location(1) flash: f32) -> @location(0) vec4<f32> {
           let texColor = textureSample(currentTexture, currentSampler, fragUV);
+          // The quad's transparent corners must not write depth and hide the particles behind them.
+          if (texColor.a < 0.02) {
+              discard;
+          }
           // Flashing white after an impact.
           return vec4<f32>(mix(texColor.rgb, vec3<f32>(texColor.a), flash), texColor.a);
         }
