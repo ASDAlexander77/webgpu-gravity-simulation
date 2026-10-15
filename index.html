@@ -64,15 +64,16 @@
             modelViewProjectionNoRotateMatrix : mat4x4<f32>,
         };
 
-        struct MassSize {
-            mass: f32,
-            size: f32,
-        };
-
         struct VertexOutput {
             @builtin(position) Position : vec4<f32>,
             @location(0) fragUV : vec2<f32>,
+            @location(1) flash : f32,
         };
+
+        // The simulation's units (heavy centers up to 12 from the origin) to the view's.
+        const WORLD_SCALE = 0.07;
+        // The SVG's circle radius, in quad sizes: the ball drawn is the collision sphere.
+        const SPRITE_CIRCLE_RADIUS = 0.45;
 
         @binding(0) @group(0) var currentSampler: sampler;
         @binding(1) @group(0) var currentTexture: texture_2d<f32>;
@@ -80,181 +81,283 @@
 
         @vertex
         fn vert_main(
-            @location(0) a_force : vec3<f32>, 
-            @location(1) a_position : vec3<f32>, 
-            @location(2) a_velocity : vec3<f32>, 
-            @location(3) a_mass_size : vec2<f32>, 
+            @location(0) a_info : vec4<f32>,
+            @location(1) a_position : vec3<f32>,
+            @location(2) a_velocity : vec3<f32>,
+            @location(3) a_mass_radius : vec2<f32>,
             @location(4) a_vert_pos : vec3<f32>,
             @location(5) a_vert_uv : vec2<f32>) -> VertexOutput {
 
           var output : VertexOutput;
-          let worldPos = viewParams.modelViewProjectionMatrix * vec4<f32>(a_position, 1.0);
-          let vertPos = viewParams.modelViewProjectionNoRotateMatrix * vec4<f32>(a_vert_pos * a_mass_size.y * 3.0f, 1.0);
+          let worldPos = viewParams.modelViewProjectionMatrix * vec4<f32>(a_position * WORLD_SCALE, 1.0);
+          // A direction (w = 0): the screen-aligned offset of the corner, without moving w.
+          let spriteSize = a_mass_radius.y * WORLD_SCALE / SPRITE_CIRCLE_RADIUS;
+          let vertPos = viewParams.modelViewProjectionNoRotateMatrix * vec4<f32>(a_vert_pos * spriteSize, 0.0);
           output.Position = worldPos + vertPos;
           output.fragUV = a_vert_uv;
+          output.flash = a_info.y;
           return output;
         }
-        
+
         @fragment
-        fn frag_main(@location(0) fragUV: vec2<f32>) -> @location(0) vec4<f32> {
+        fn frag_main(@location(0) fragUV: vec2<f32>, @location(1) flash: f32) -> @location(0) vec4<f32> {
           let texColor = textureSample(currentTexture, currentSampler, fragUV);
-          return texColor;
-        }        
+          // Flashing white after an impact.
+          return vec4<f32>(mix(texColor.rgb, vec3<f32>(texColor.a), flash), texColor.a);
+        }
     </textarea>
     <textarea id="calc_wgsl">
+        // compute_nbody_collisions (native_ts_graphics): the particles are spheres that bounce off
+        // each other and off the heavy centers. Four passes, in this order: velocities from gravity,
+        // each particle's contacts counted, the collisions (each particle writes only its own
+        // Contact, so no particle reads one that another thread has already moved), then positions.
         struct SimParams {
             time: f32,
         };
 
-        struct MassSize {
-            mass: f32,
-            size: f32,
-            debug1: f32,
-            debug2: f32
+        struct Particle {
+            info: vec4<f32>,        // x = color, y = collision flash (1 on impact, fading to 0), z = contacts this step
+            pos: vec4<f32>,         // xyz = position
+            vel: vec4<f32>,         // xyz = velocity
+            mass_radius: vec4<f32>, // x = mass, y = collision radius
         };
 
-        struct Instance {
-            @size(16) force: vec3<f32>, 
-            @size(16) position : vec3<f32>,
-            @size(16) velocity : vec3<f32>,
-            @size(16) mass_size: MassSize,
+        struct Particles {
+            instances : array<Particle>,
         };
 
-        struct Instances {
-            instances : array<Instance>,
+        // What collide_cs found for a particle, applied by integrate_cs.
+        struct Contact {
+            velocity: vec4<f32>, // xyz = velocity change, w = flash
+            shift: vec4<f32>,    // xyz = position correction
         };
 
-        @binding(0) @group(0) var<storage, read> instancesIn : Instances;
-        @binding(1) @group(0) var<storage, read_write> instancesOut : Instances;
+        struct Contacts {
+            contacts : array<Contact>,
+        };
+
+        // The previous step, read only by calculate_cs.
+        @binding(0) @group(0) var<storage, read> instancesIn : Particles;
+        // This step: calculate_cs writes it whole, the other passes update it in place.
+        @binding(1) @group(0) var<storage, read_write> instancesOut : Particles;
+        @binding(2) @group(0) var<storage, read_write> contactsOut : Contacts;
         @binding(0) @group(1) var<uniform> params : SimParams;
-    
+
+        const GRAVITY = 0.002;
+        const POWER = 0.75;
+        const SOFTEN = 0.05;
+        const TIME_FACTOR = 0.05;
+        // Bounciness: 1 keeps the approach speed along the contact normal, 0 removes it.
+        const RESTITUTION = 0.8;
+        // Share of an overlap pushed out per step: gravity keeps pressing the particles that rest on
+        // a heavy center into it, and velocity changes alone would let them sink.
+        const SEPARATION = 0.5;
+        // Velocity change that makes a full flash.
+        const FLASH_SPEED = 20.0;
+        // Seconds a full flash takes to fade.
+        const FLASH_SECONDS = 0.4;
+
+        // First pass: the particles' velocities, from the gravity of the others.
         @compute @workgroup_size(64)
-        fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
-            var G = 6.67408313131E-11;
-
-            var time = params.time;
-            var count : u32 = arrayLength(&instancesIn.instances);
-
-            var threadIndex = GlobalInvocationID.x;
-            if (threadIndex >= count)
-            {
+        fn calculate_cs(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
+            let index = GlobalInvocationID.x;
+            let count = arrayLength(&instancesIn.instances);
+            if (index >= count) {
                 return;
             }
 
-            var first = instancesIn.instances[threadIndex];
+            var particle = instancesIn.instances[index];
+            var acceleration = vec3<f32>(0.0, 0.0, 0.0);
+            for (var j : u32 = 0u; j < count; j = j + 1u) {
+                let other = instancesIn.instances[j];
+                let len = other.pos.xyz - particle.pos.xyz;
+                acceleration = acceleration + GRAVITY * len * other.mass_radius.x / pow(dot(len, len) + SOFTEN, POWER);
+            }
 
-            var m1 = first.mass_size.mass;
-            if (m1 <= 0.0)
-            {
-                // no calculation required
+            particle.vel = vec4<f32>(particle.vel.xyz + params.time * TIME_FACTOR * acceleration, particle.vel.w);
+            instancesOut.instances[index] = particle;
+        }
 
-                // clone data, otherwise record in second buffer becomes dirty (has stail values)
-                instancesOut.instances[threadIndex] = first;
+        struct ContactTest {
+            hit: bool,
+            overlapping: bool,
+            t: f32,
+        };
+
+        // Whether a pair touches this step: overlapping now, or apart but closing in so fast that
+        // it would cross within the step and never be seen overlapping. Then t is the first touch,
+        // |offset + motion * t| = reach for t in [0, 1]. Both particles of a pair get the same
+        // answer (offset and motion change sign), so they count the same contacts.
+        fn findContact(offset: vec3<f32>, relativeVelocity: vec3<f32>, reach: f32, step: f32) -> ContactTest {
+            var result = ContactTest(false, false, 0.0);
+            let distanceSquared = dot(offset, offset);
+            result.overlapping = distanceSquared < reach * reach;
+            if (distanceSquared < 1e-12) {
+                return result;
+            }
+            if (result.overlapping) {
+                result.hit = true;
+                return result;
+            }
+
+            let motion = step * relativeVelocity;
+            let a = dot(motion, motion);
+            let b = dot(offset, motion);
+            let c = distanceSquared - reach * reach;
+            let discriminant = b * b - a * c;
+            // Closing in (b < 0) and the line comes within reach (discriminant >= 0).
+            if (b >= 0.0 || discriminant < 0.0) {
+                return result;
+            }
+            result.t = (-b - sqrt(discriminant)) / a;
+            result.hit = result.t <= 1.0;
+            return result;
+        }
+
+        // Second pass: how many particles each one touches this step, into info.z for collide_cs.
+        @compute @workgroup_size(64)
+        fn count_cs(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
+            let index = GlobalInvocationID.x;
+            let count = arrayLength(&instancesOut.instances);
+            if (index >= count) {
                 return;
             }
 
-            var forceVector = vec3<f32>(0.0, 0.0, 0.0);
+            // Field by field: the other threads write their own info.z meanwhile.
+            let position = instancesOut.instances[index].pos.xyz;
+            let velocity = instancesOut.instances[index].vel.xyz;
+            let radius = instancesOut.instances[index].mass_radius.y;
+            let step = params.time * TIME_FACTOR;
 
-            // calculate result force on all objects/planets
-            for (var j : u32 = 0u; j < count; j=j+1u) 
-            {
-                if (threadIndex == j) 
-                {
+            var contacts = 0.0;
+            for (var j : u32 = 0u; j < count; j = j + 1u) {
+                if (j == index) {
                     continue;
                 }
-
-                var second = instancesIn.instances[j];
-                var m2 = second.mass_size.mass;
-                if (m2 <= 0.0)
-                {
-                    // skip no mass object
-                    continue;
-                }
-
-                var dist = distance(first.position, second.position);
-                var distanceSquared = dist * dist;
-
-                if (distanceSquared > 0.0)
-                {
-                    var force = G * m1 * m2 / distanceSquared;
-
-                    var directionVector = normalize((second.position - first.position));
-
-                    forceVector = forceVector + (directionVector * force);
+                let contact = findContact(
+                    position - instancesOut.instances[j].pos.xyz,
+                    velocity - instancesOut.instances[j].vel.xyz,
+                    radius + instancesOut.instances[j].mass_radius.y,
+                    step);
+                if (contact.hit) {
+                    contacts = contacts + 1.0;
                 }
             }
 
-            // calculate new position depends on force
-            var a = forceVector / m1;
-            var dV = a * time;
-            var dS = first.velocity * time;
+            instancesOut.instances[index].info.z = contacts;
+        }
 
-            var inst = instancesOut.instances[threadIndex];
-            inst.force = forceVector;
-            inst.mass_size = first.mass_size;
-            inst.mass_size.mass = m1;                          
-            inst.position = first.position + dS;
-            inst.velocity = first.velocity + dV;
-            instancesOut.instances[threadIndex] = inst;
+        // Third pass: collisions, against every other particle. Each particle reads the others as
+        // calculate_cs left them and writes only its own Contact, so the order the threads run in
+        // doesn't matter. For each touching pair still approaching, the particle takes its part of
+        // the impulse of an elastic collision between spheres, divided by the larger contact count
+        // of the two: a particle's velocity change is at most its largest single bounce, and both
+        // particles of a pair still take equal and opposite momentum.
+        @compute @workgroup_size(64)
+        fn collide_cs(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
+            let index = GlobalInvocationID.x;
+            let count = arrayLength(&instancesOut.instances);
+            if (index >= count) {
+                return;
+            }
 
-            // calculate collisions
-            for(var j : u32 = 0u; j < count; j=j+1u) 
-            {
-                if (threadIndex == j) 
-                {
+            let particle = instancesOut.instances[index];
+            let position = particle.pos.xyz;
+            let velocity = particle.vel.xyz;
+            let mass = particle.mass_radius.x;
+            let radius = particle.mass_radius.y;
+            let contacts = particle.info.z;
+
+            // integrate_cs's step: how far a velocity moves a particle this step.
+            let step = params.time * TIME_FACTOR;
+
+            var velocityChange = vec3<f32>(0.0, 0.0, 0.0);
+            var shift = vec3<f32>(0.0, 0.0, 0.0);
+            // Position corrections of the swept contacts, exact, so not limited as the overlaps' are.
+            var sweepShift = vec3<f32>(0.0, 0.0, 0.0);
+            var flash = 0.0;
+
+            for (var j : u32 = 0u; j < count; j = j + 1u) {
+                if (j == index) {
                     continue;
                 }
 
-                var second = instancesIn.instances[j];
-                var m2 = second.mass_size.mass;
-                if (m2 <= 0.0)
-                {
-                    // skip no mass object
+                let other = instancesOut.instances[j];
+
+                // From the other particle to this one.
+                let offset = position - other.pos.xyz;
+                let reach = radius + other.mass_radius.y;
+                let relativeVelocity = velocity - other.vel.xyz;
+                let contact = findContact(offset, relativeVelocity, reach, step);
+                if (!contact.hit) {
                     continue;
                 }
 
-                // calculate collision
-                var b = distance(first.position, second.position);
-                var c = distance(newPosition, second.position);
-                var radius = (first.mass_size.size + second.mass_size.size) / 2.0;
-                var id1 = threadIndex; //first.id;
-                var id2 = j; //second.id;
+                // This particle's share of the pair's change: the other's mass over the total.
+                let share = other.mass_radius.x / (mass + other.mass_radius.x);
+                // And the pair's part of the busier particle's contacts (both counted this one).
+                let impulseShare = share / max(max(contacts, other.info.z), 1.0);
 
-                if (b < radius || c < radius) {
-                    if (m1 > m2 || (m1 == m2 && id1 > id2)) {
-                        // fix  speed  v = (m1v1 + m2v2) / (m1 + m2)
-                        var v1 = first.velocity;
-                        var v2 = second.velocity;
-                        var vresult = (v1 * m1 + v2 * m2) / (m1 + m2);
-
-                        var s1 = first.mass_size.size;
-                        var s2 = second.mass_size.size;
-                        var newR = pow((s1 * s1 * s1 + s2 * s2 * s2), 1.0 / 3.0);
-
-                        // mark collision
-                        var inst = instancesOut.instances[threadIndex];
-                        inst.velocity = vresult;  
-                        inst.mass_size.mass = m1 + m2;                          
-                        inst.mass_size.size = newR;
-                        inst.mass_size.debug1 = -1.0;
-                        inst.mass_size.debug2 = f32(j); 
-                        instancesOut.instances[threadIndex] = inst;
-                    } else {
-                        // collision from other side
-                        var inst = instancesOut.instances[threadIndex];
-                        inst.mass_size.mass = 0.0;    
-                        inst.mass_size.size = 0.0;
-                        inst.velocity = vec3<f32>(0.0, 0.0, 0.0);
-                        inst.force = vec3<f32>(0.0, 0.0, 0.0);
-                        inst.mass_size.debug1 = -3.0;
-                        inst.mass_size.debug2 = f32(j);
-                        instancesOut.instances[threadIndex] = inst;
+                if (!contact.overlapping) {
+                    // Apart now: bounce the pair at the first touch, with the contact normal and
+                    // approach speed there.
+                    let normal = (offset + step * relativeVelocity * contact.t) / reach;
+                    let approach = dot(relativeVelocity, normal);
+                    if (approach >= 0.0) {
+                        continue;
                     }
+                    let bounce = -(1.0 + RESTITUTION) * impulseShare * approach;
+                    velocityChange = velocityChange + bounce * normal;
+                    flash = max(flash, saturate(bounce / FLASH_SPEED));
+                    // integrate_cs moves the particle the whole step with the new velocity, but it
+                    // had the old one until the touch: take back that part of the step.
+                    sweepShift = sweepShift - contact.t * step * bounce * normal;
+                    continue;
+                }
 
-                    // no more calculations after collision
-                    break;
-                } 
+                let dist = length(offset);
+                let normal = offset / dist;
+
+                // Negative while the two close in. Pairs already separating keep their velocities,
+                // or a pair would bounce back and forth while it still overlaps.
+                let approach = dot(relativeVelocity, normal);
+                if (approach < 0.0) {
+                    let bounce = -(1.0 + RESTITUTION) * impulseShare * approach;
+                    velocityChange = velocityChange + bounce * normal;
+                    flash = max(flash, saturate(bounce / FLASH_SPEED));
+                }
+
+                shift = shift + SEPARATION * share * (reach - dist) * normal;
             }
+
+            // In a dense pile the corrections of many neighbors add up: at most a radius per step,
+            // or a particle can land deep inside others and pump energy into the pile.
+            let shiftLength = length(shift);
+            if (shiftLength > radius) {
+                shift = shift * (radius / shiftLength);
+            }
+
+            contactsOut.contacts[index] = Contact(vec4<f32>(velocityChange, flash), vec4<f32>(shift + sweepShift, 0.0));
+        }
+
+        // Last pass: the collisions, then Euler integration of the positions.
+        @compute @workgroup_size(64)
+        fn integrate_cs(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
+            let index = GlobalInvocationID.x;
+            if (index >= arrayLength(&instancesOut.instances)) {
+                return;
+            }
+
+            var particle = instancesOut.instances[index];
+            let contact = contactsOut.contacts[index];
+
+            let velocity = particle.vel.xyz + contact.velocity.xyz;
+            let position = particle.pos.xyz + contact.shift.xyz + params.time * TIME_FACTOR * velocity;
+            particle.vel = vec4<f32>(velocity, particle.vel.w);
+            particle.pos = vec4<f32>(position, particle.pos.w);
+            particle.info.y = max(max(particle.info.y, contact.velocity.w) - params.time / FLASH_SECONDS, 0.0);
+
+            instancesOut.instances[index] = particle;
         }
     </textarea>
     <svg id="svg1" width="100" height="100" style="display:none;">
@@ -287,7 +390,8 @@
                 // 300 000 - crash, 100 000 - very slow
                 // 35 000 speed is fine       
                 //await this.#createScene(350);
-                await this.#createScene(1350);
+                // 6 attractors x 256: every particle is tested against every other, three times a step
+                await this.#createScene(1536);
                 this.engine.draw();
             }
 
