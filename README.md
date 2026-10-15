@@ -2,7 +2,7 @@
 
 **A real-time 3D N-body gravity simulation with particle collisions, running entirely on the GPU using WebGPU compute shaders (WGSL) in the browser.** No build step, no dependencies: plain JavaScript and HTML.
 
-[![WebGPU N-body gravity simulation with colliding particles](https://raw.githubusercontent.com/ASDAlexander77/webgpu-gravity-simulation/main/example_compute.gif)](index.html)
+[![WebGPU N-body gravity simulation with colliding particles](example.jpg)](index.html)
 
 <p align="center">
   <a href="https://www.w3.org/TR/webgpu/" title="WebGPU"><img src="https://user-images.githubusercontent.com/454184/116650388-d2cdde00-a935-11eb-8553-eb73eed2016b.png" alt="WebGPU logo" width="150" height="150" /></a>
@@ -103,7 +103,7 @@ src/
 
 [`index.hello.html`](index.hello.html) shows the smallest useful WebGPU program: request an adapter and device, configure a canvas, create a render pipeline from WGSL vertex and fragment shaders, and draw a triangle.
 
-[![WebGPU hello triangle example](https://raw.githubusercontent.com/ASDAlexander77/webgpu-gravity-simulation/main/example.gif)](index.hello.html)
+[![WebGPU hello triangle example](example.gif)](index.hello.html)
 
 ## Related topics
 
