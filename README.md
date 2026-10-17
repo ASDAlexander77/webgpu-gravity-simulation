@@ -10,19 +10,23 @@
 
 ## Features
 
-- **GPU-accelerated N-body physics**: every particle is attracted by every other particle (all-pairs gravity), computed in WebGPU compute shaders.
-- **Collision physics**: particles are spheres that bounce off each other (restitution, positional correction) instead of merging, with a flash effect on impact.
-- **Heavy attractors with particle clouds**: six massive centers, each surrounded by a cloud of light particles (1536 particles by default).
-- **Instanced rendering**: particles are drawn as textured billboards (an SVG sprite) with a WebGPU render pipeline and multisampling.
-- **Interactive camera**: drag with the mouse to rotate the view, use the mouse wheel to zoom.
-- **Multi-pass compute pipeline** with ping-pong (double-buffered) storage buffers: `calculate_cs` → `count_cs` → `collide_cs` → `integrate_cs`.
-- **Extra demos**: Conway's Game of Life on the GPU and a minimal WebGPU "hello triangle".
+- **GPU-accelerated N-body physics**: every particle is attracted by every other particle (all-pairs gravity), computed in WebGPU compute shaders. Optionally the pull is symmetric (momentum and angular momentum are kept).
+- **Full collision physics** (a port of `compute_nbody_collisions` from native_ts_graphics): particles are solid spheres with spin. Bounciness that falls with impact speed, Coulomb friction, rolling resistance, contact springs, swept contacts for fast particles.
+- **Heat**: the kinetic energy a contact loses becomes heat; particles glow and cool off over a few seconds.
+- **Merging and breaking**: slow, hot particles merge (mass, volume, momentum and angular momentum kept, merged spheres grow back to their size); hard hits break a particle in two, into free slots.
+- **Heavy attractors with particle clouds**: up to 24 massive centers, each with its own cloud, laid out as a preset, ring, sphere, line or random ball; clouds as a Gaussian, uniform ball, shell or flat disk.
+- **HDR rendering**: lit spheres with spin marks, velocity trails, coordinate planes, an axis gizmo and a multi-level bloom, composited with a soft tone shoulder.
+- **Control panel**: every switch and slider of the original (see below), all live; restart with new settings.
+- **Interactive camera**: drag to rotate, wheel to zoom; it orbits by itself when left alone.
+- **Multi-pass compute pipeline** over one in-place storage buffer: `calculate_cs` → `count_cs` → `collide_cs` → (`absorb_cs` → `kill_cs`) → (`collect_free_cs`) → `integrate_cs` → (`fragment_cs`).
+- **Extra demos**: the previous, simpler collisions demo, Conway's Game of Life on the GPU and a minimal WebGPU "hello triangle".
 
 ## Demos
 
 | File | What it is |
 | --- | --- |
-| [`index.html`](index.html) | N-body gravity simulation with collisions (main demo) |
+| [`index.html`](index.html) | N-body gravity simulation with collisions, heat, merging and breaking, with a control panel (main demo) |
+| [`index.basic.html`](index.basic.html) | The earlier, simpler collisions demo (bounce, flash) |
 | [`index.life.html`](index.life.html) | Conway's Game of Life as a compute shader |
 | [`index.hello.html`](index.hello.html) | Minimal WebGPU example: a red triangle |
 
@@ -62,41 +66,61 @@ Controls:
 | --- | --- |
 | Left mouse drag | Rotate the camera |
 | Mouse wheel | Zoom in / out |
+| Space | Pause / resume |
+| C / H | Collisions / heating on and off |
+| P / T | Coordinate planes / trails on and off |
+
+The panel in the top right corner has four sections:
+
+- **Simulation**: Paused, Collisions, Heating, Gravity between all pairs, Contact springs, Friction (μ), Rolling resistance (μr), Hard hits bounce less, Gravity softened by size, Merging (merge speed, hot particles stick), Breaking (break speed), and sliders for time scale, gravity G, bounciness, heat per energy and cooling time. A slider under a switch applies while the switch is on.
+- **Display**: planes, axis gizmo, orbit when idle, lit spheres, spin marks, trails (length), bloom (strength, threshold).
+- **Units**: what the sliders' units mean.
+- **New simulation**: attractors (1–24), particles each, attractor and particle layouts, layout and attractor radius, particle radius range, cloud spread, fragment room, random seed, and **Restart**. These take effect on Restart.
+
+Query parameters (as the example's command line): `?attractors=2&particles=1&merge=2&fragment=10&room=20&seed=7&fullgravity&nocool&noui`.
 
 ## How it works
 
-The simulation keeps all particle state (position, velocity, mass, radius) in GPU storage buffers and never reads it back to the CPU. Each frame runs four compute passes, then renders:
+The simulation keeps all particle state (position and mass, velocity, collision radius and heat, spin, spin marker and true radius: five `vec4`s each) in GPU storage buffers and reads it back only to count the particles left after merges. Each frame runs the compute passes in one compute pass over the same buffers, then renders:
 
-1. **`calculate_cs`**: sums the gravitational pull of all other particles and updates velocities.
-2. **`count_cs`**: counts the contacts each particle has this step.
-3. **`collide_cs`**: resolves sphere–sphere collisions (velocity change, overlap separation, impact flash).
-4. **`integrate_cs`**: moves the particles.
+1. **`calculate_cs`**: sums the gravitational pull of the other particles (through workgroup shared memory) and updates velocities.
+2. **`count_cs`**: counts the contacts each particle has this step, weighted by how much each moves it.
+3. **`collide_cs`**: resolves sphere–sphere contacts (bounce, friction, rolling, contact springs, heat), swept for fast pairs, and decides merges and breaks.
+4. **`absorb_cs`, `kill_cs`** (merging): survivors absorb the particles that merge into them; the absorbed are removed.
+5. **`collect_free_cs`, `fragment_cs`** (breaking): hard-hit particles split into two, the second half taking a free slot.
+6. **`integrate_cs`**: applies the contacts, moves the particles, turns the spin markers and cools the heat.
 
-The result is drawn as instanced billboards. The O(N²) all-pairs interaction is what makes the GPU worthwhile here: with a few thousand particles, every particle is tested against every other one several times per step.
+Rendering pulls six vertices per particle from the storage buffer (`vertex_index`), draws trails and lit balls into an `rgba16float` target, blurs it down and up over six levels for the bloom, and composites it into the canvas, with the planes and the gizmo over it.
 
-Tunable constants (`GRAVITY`, `SOFTEN`, `TIME_FACTOR`, `RESTITUTION`, `SEPARATION`, …) are at the top of the compute shader in `index.html`; the particle count is set in `Runner.#createScene` in the same file.
+The WGSL lives in JavaScript template strings, loaded with plain `<script>` tags: nothing is fetched, so the page can be opened from `file://`, and a `<textarea>` (which decodes entities such as `&params`) would corrupt the pointer arguments.
 
 ## Project structure
 
 ```
-index.html            N-body gravity demo (shaders + entry point)
+index.html            N-body collisions demo (page, entry point)
+index.basic.html      The earlier, simpler collisions demo
 index.life.html       Game of Life demo
 index.hello.html      Minimal WebGPU triangle
 src/
-  engine.js           WebGPU device, canvas, render loop, camera input
+  nbody/
+    sim_shader.js     WGSL: the simulation passes
+    draw_shader.js    WGSL: balls, trails, planes, gizmo, bloom, composite
+    nbody.js          Constants, particle placement, camera, buffers, pipelines, frame loop
+    ui.js             The control panel
+  engine.js           WebGPU device, canvas, render loop, camera input (the other demos)
   mesh.js             Mesh / computed mesh, pipelines, textures
   data.js             Vertex, instance and uniform buffer wrappers
   view.js, scene.js   View settings and scene container
   vector.js, matrix.js  Math helpers
   custom/
-    gravitymesh.js    N-body particles with collisions
+    gravitymesh.js    The earlier N-body particles with collisions
     lifemesh.js       Game of Life grid
     datamesh.js       Data-driven mesh example
 ```
 
 ## Performance notes
 
-- Because every particle is compared with every other, cost grows quadratically with particle count. 1,536 particles run smoothly; tens of thousands become slow and hundreds of thousands can crash the GPU process.
+- Because every particle is compared with every other, cost grows quadratically with particle count. The default 6 × 1024 particles run smoothly on a desktop GPU; tens of thousands become slow (collisions test every pair, three passes a step). The gravity pass samples a quarter of the light particles unless *Gravity between all pairs* is on, which is why *Particles each* is 1 or a multiple of 1024.
 - Spatial partitioning (grid or tree) would be the next step to scale further.
 
 ## Minimal WebGPU example

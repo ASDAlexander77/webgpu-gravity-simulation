@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>WebGPU N-Body Gravity Simulation with Collisions</title>
+
+    <style>
+        [hidden] {
+            display: none !important;
+        }
+
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font: 12px/1.35 system-ui, Segoe UI, sans-serif;
+        }
+
+        #renderCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        #renderCanvas:active {
+            cursor: grabbing;
+        }
+
+        #panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 330px;
+            max-height: calc(100% - 20px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            padding: 6px 8px;
+            color: #dde3ea;
+            background: rgba(16, 20, 28, 0.82);
+            border: 1px solid #38424f;
+            border-radius: 6px;
+            user-select: none;
+        }
+
+        #panel .title {
+            font-weight: 600;
+            font-size: 13px;
+            padding: 2px 0;
+        }
+
+        #panel .status {
+            color: #8fb4d8;
+            padding-bottom: 4px;
+            min-height: 1.35em;
+        }
+
+        #panel details.section {
+            border-top: 1px solid #38424f;
+            padding: 3px 0;
+        }
+
+        #panel summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 2px 0;
+        }
+
+        #panel .row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 1px 0;
+        }
+
+        #panel .check {
+            cursor: pointer;
+        }
+
+        #panel .sub {
+            margin-left: 18px;
+        }
+
+        #panel .slider .name,
+        #panel .select .name {
+            flex: 0 0 130px;
+        }
+
+        #panel .slider input {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        #panel .slider .value {
+            flex: 0 0 48px;
+            text-align: right;
+            color: #8fb4d8;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #panel .select select {
+            flex: 1 1 auto;
+            min-width: 0;
+            color: inherit;
+            background: #232a35;
+            border: 1px solid #38424f;
+        }
+
+        #panel button {
+            margin: 4px 4px 2px 0;
+            padding: 3px 12px;
+            color: inherit;
+            background: #2c3646;
+            border: 1px solid #4a586b;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #panel button:hover {
+            background: #38465a;
+        }
+
+        #panel .note {
+            color: #9aa6b4;
+            white-space: pre;
+            font-size: 11px;
+        }
+
+        #message {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            color: #ffb4a8;
+            font: 14px/1.5 system-ui, sans-serif;
+            text-align: center;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas"></canvas>
+    <div id="panel" hidden></div>
+    <div id="message"></div>
+
+    <script src="src/nbody/sim_shader.js"></script>
+    <script src="src/nbody/draw_shader.js"></script>
+    <script src="src/nbody/nbody.js"></script>
+    <script src="src/nbody/ui.js"></script>
+    <script>
+        // The command line of the example, as the query: ?attractors=2&particles=1&merge=2&fragment=10
+        // &room=20&seed=7&fullgravity&nocool&noui
+        function readOptions() {
+            const query = new URLSearchParams(location.search);
+            const number = (name, fallback) => {
+                const value = parseFloat(query.get(name));
+                return Number.isFinite(value) ? value : fallback;
+            };
+            return {
+                attractors: Math.max(1, Math.min(MAX_ATTRACTORS, Math.floor(number('attractors', NUM_ATTRACTORS)))),
+                particles: Math.max(1, Math.floor(number('particles', PARTICLES_PER_ATTRACTOR))),
+                merge: number('merge', DEFAULT_MERGE_SPEED),
+                fragment: number('fragment', DEFAULT_FRAGMENT_SPEED),
+                room: number('room', 100.0 * DEFAULT_FRAGMENT_ROOM) / 100.0,
+                seed: Math.max(1, Math.floor(number('seed', DEFAULT_SEED))),
+                fullGravity: query.has('fullgravity'),
+                noCool: query.has('nocool'),
+                noUI: query.has('noui'),
+            };
+        }
+
+        async function start() {
+            const message = document.getElementById('message');
+            if (!navigator.gpu) {
+                message.textContent = 'WebGPU is not available in this browser.';
+                return;
+            }
+            const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+            if (!adapter) {
+                message.textContent = 'No WebGPU adapter found.';
+                return;
+            }
+            // Big simulations need big storage buffers: ask for what the adapter has.
+            const device = await adapter.requestDevice({
+                requiredLimits: {
+                    maxStorageBufferBindingSize: adapter.limits.maxStorageBufferBindingSize,
+                    maxBufferSize: adapter.limits.maxBufferSize,
+                },
+            });
+            device.lost.then((info) => { message.textContent = `The GPU device was lost: ${info.message}`; });
+            device.addEventListener('uncapturederror', (e) => console.error(e.error.message));
+
+            const canvas = document.getElementById('renderCanvas');
+            const context = canvas.getContext('webgpu');
+            const format = navigator.gpu.getPreferredCanvasFormat();
+            context.configure({ device, format, alphaMode: 'opaque' });
+
+            const options = readOptions();
+            const nbody = new NBodyCollisions(device, context, canvas, format, options);
+            const errors = await nbody.init();
+            if (errors.length > 0) {
+                message.textContent = errors.join('\n');
+                console.error(errors.join('\n'));
+                return;
+            }
+            window.nbody = nbody;
+
+            if (!options.noUI) {
+                const panel = document.getElementById('panel');
+                panel.hidden = false;
+                new ControlPanel(panel, nbody).build();
+            }
+            window.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.altKey || e.metaKey) {
+                    return;
+                }
+                if (nbody.onKey(e.code)) {
+                    e.preventDefault();
+                    window.dispatchEvent(new Event('nbody-keys'));
+                }
+            });
+
+            const resize = () => {
+                const ratio = window.devicePixelRatio || 1;
+                const width = Math.max(1, Math.floor(canvas.clientWidth * ratio));
+                const height = Math.max(1, Math.floor(canvas.clientHeight * ratio));
+                if (canvas.width !== width || canvas.height !== height) {
+                    canvas.width = width;
+                    canvas.height = height;
+                }
+            };
+            const loop = (now) => {
+                resize();
+                nbody.frame(now);
+                requestAnimationFrame(loop);
+            };
+            requestAnimationFrame(loop);
+        }
+
+        start().catch((e) => {
+            document.getElementById('message').textContent = String(e);
+            console.error(e);
+        });
+    </script>
+</body>
+
+</html>
